@@ -5,7 +5,7 @@
 // e legenda. La logica dei click vive in useTerritoryInteraction, condivisa
 // con la mappa 3D. Le geometrie statiche sono in layout2d.ts.
 
-import { memo, useCallback, useMemo } from 'react';
+import { memo, useCallback, useLayoutEffect, useMemo, useRef } from 'react';
 import { useGameStore } from '../../store/gameStore';
 import { controlledZones } from '../../engine';
 import { FACTION_DEFINITIONS, TERRITORY_DEFINITIONS, ZONE_DEFINITIONS, isTerritoryId } from '../../data';
@@ -194,6 +194,15 @@ const Legend = memo(function Legend() {
 
 export function GameMap() {
   const game = useGameStore(s => s.game);
+  // Sui telefoni la carta è più grande del pannello e si scorre col dito
+  // (styles/mobile.css): all'apertura parte centrata.
+  const scrollerRef = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    const el = scrollerRef.current;
+    if (!el) return;
+    el.scrollLeft = Math.max(0, (el.scrollWidth - el.clientWidth) / 2);
+    el.scrollTop = Math.max(0, (el.scrollHeight - el.clientHeight) / 2);
+  }, []);
   const { highlightPairs, getVariant, handleClick, handleHover } = useTerritoryInteraction();
 
   const onNodeClick = useCallback((id: string) => {
@@ -217,7 +226,7 @@ export function GameMap() {
   };
 
   return (
-    <div className="map2d">
+    <div className="map2d" ref={scrollerRef}>
       <svg
         viewBox={`0 0 ${MAP_W} ${MAP_H}`}
         className="map2d__svg"

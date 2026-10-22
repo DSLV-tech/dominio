@@ -29,12 +29,14 @@ import { useAIPlayer } from './hooks/useAIPlayer';
 import { useStoryDirector } from './hooks/useStoryDirector';
 import { useAudioUnlock, useGameAudio } from './hooks/useGameAudio';
 import { AudioControls } from './components/hud/AudioControls';
+import { useIsNarrow } from './hooks/useIsNarrow';
 import type { MapMode } from './types';
 import './styles/ui.css';
 import './styles/story.css';
 import './styles/combat.css';
 import './styles/attack.css';
 import './styles/map2d.css';
+import './styles/mobile.css';
 
 // three.js (~700 KB) viene scaricato solo quando serve la vista 3D
 const loadBoard3D = () =>
@@ -44,6 +46,11 @@ const GameBoard3D = lazy(loadBoard3D);
 const MAP_MODES: ReadonlyArray<SegmentOption<MapMode>> = [
   { value: '3D', label: 'Città 3D' },
   { value: '2D', label: 'Mappa 2D' },
+];
+// sui telefoni la barra superiore è stretta: etichette brevi
+const MAP_MODES_SHORT: ReadonlyArray<SegmentOption<MapMode>> = [
+  { value: '3D', label: <><span aria-hidden="true">3D</span><span className="sr-only">Città 3D</span></> },
+  { value: '2D', label: <><span aria-hidden="true">2D</span><span className="sr-only">Mappa 2D</span></> },
 ];
 
 function StageFallback() {
@@ -75,6 +82,7 @@ function GameScreen() {
   const setMapMode   = useUIStore(s => s.setMapMode);
   const resetGame    = useGameStore(s => s.resetGame);
   const round        = useGameStore(s => s.game?.round ?? 1);
+  const narrow       = useIsNarrow();
   // "Lobby" non azzera più al primo click: chiede conferma
   const [confirmLeave, setConfirmLeave] = useState(false);
   const askLeave   = useCallback(() => setConfirmLeave(true), []);
@@ -90,7 +98,7 @@ function GameScreen() {
         </div>
         <div className="topbar__actions">
           <AudioControls />
-          <SegmentedControl options={MAP_MODES} value={mapMode} onChange={setMapMode} ariaLabel="Vista mappa" size="sm" />
+          <SegmentedControl options={narrow ? MAP_MODES_SHORT : MAP_MODES} value={mapMode} onChange={setMapMode} ariaLabel="Vista mappa" size="sm" />
           <button type="button" className="btn btn--ghost btn--sm" onClick={askLeave} title="Abbandona e torna alla lobby" aria-haspopup="dialog">
             Lobby
           </button>

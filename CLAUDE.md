@@ -36,7 +36,7 @@ Preferenze in `uiStore.attackPrefs` (localStorage `dominio.attack`), pannello `h
 - Turno CPU: `store/settingsStore` (velocità, camera), `uiStore.cameraFocus/traces/turnRecap`, `engine/recap.ts`, `hud/TurnRecap`.
 - Possesso: `engine/reinforcements.ts → controlledZones`, `board3d/OwnershipDecal`, `board3d/ZoneOutline`.
 - Cielo: `data/sky.ts` + `BoardEnvironment` (SkyDirector); valori condivisi per frame in `board3d/skyRuntime.ts`. Qualità: `board3d/graphics.ts` (`useGraphicsBudget`).
-- Mobile: `hud/BottomSheet` sotto i 768 px (`hooks/useIsNarrow`). Guida del primo turno: `store/tutorialStore`, `data/coach.ts`, `hud/CoachMark`.
+- Mobile: `hud/BottomSheet` sotto i 768 px o con telefono in orizzontale (`hooks/useIsNarrow`, stessa condizione in `styles/mobile.css`). `styles/mobile.css` (importato per ultimo) tiene la partita a schermo intero senza scroll di pagina, compatta topbar/barra del turno e i pannelli sulla mappa, scontro su due colonne in orizzontale, carta 2D scorrevole col dito. La camera 3D (`CameraRig.cameraView`) nei pannelli verticali gira di 90° (porto in basso), guarda il centro dei territori e si allontana quanto basta a inquadrarli con le targhe; si reinquadra alla rotazione del telefono. Guida del primo turno: `store/tutorialStore`, `data/coach.ts`, `hud/CoachMark`.
 
 ## Storia: "La Notte Lunga di Novarata"
 Contenuti in `src/data/story.ts`: prologo (3 pagine), 4 atti per turno (1, 3, 5, 7) con indizi sul mistero

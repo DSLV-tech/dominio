@@ -16,6 +16,7 @@ export const BACKGROUND_COLOR  = '#0f1622';
 export const CAMERA_OFFSET: readonly [number, number, number] = [0.5, 25.4, 17.8];
 export const CAMERA_TARGET: readonly [number, number, number] = [-0.5, 0, 1];
 export const CAMERA_REF_ASPECT = 1.6;
+export const CAMERA_FOV = 40;   // gradi, verticale
 export const PAN_LIMIT = { minX: -17, maxX: 17, minZ: -12, maxZ: 13 } as const;
 
 /** Colore dell'anello di evidenziazione per variante (null = nessun anello). */

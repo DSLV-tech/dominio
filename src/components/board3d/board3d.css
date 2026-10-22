@@ -8,6 +8,9 @@
   overflow: hidden;
   background: #0f1622;
   touch-action: none;
+  /* le etichette HTML della plancia restano sotto i pannelli della mappa
+     (attacco, guida, scheda del territorio) qualunque sia il loro z-index */
+  isolation: isolate;
 }
 
 /* Vignettatura cinematografica: concentra lo sguardo sul centro città */

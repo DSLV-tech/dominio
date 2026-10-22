@@ -16,7 +16,7 @@ import { BoardScene } from './BoardScene';
 import { HtmlPortalContext } from './htmlPortal';
 import { BoardLoadingOverlay } from './BoardLoadingOverlay';
 import { Board3DFallback } from './Board3DFallback';
-import { CAMERA_OFFSET, CAMERA_TARGET } from './constants';
+import { CAMERA_FOV, CAMERA_OFFSET, CAMERA_TARGET } from './constants';
 import './board3d.css';
 
 
@@ -43,7 +43,7 @@ export function GameBoard3D() {
           <Canvas
             shadows={budget.shadows}
             dpr={[budget.dpr[0], budget.dpr[1]]}
-            camera={{ position: [CAMERA_TARGET[0] + CAMERA_OFFSET[0], CAMERA_OFFSET[1], CAMERA_TARGET[2] + CAMERA_OFFSET[2]], fov: 40, near: 0.5, far: 200 }}
+            camera={{ position: [CAMERA_TARGET[0] + CAMERA_OFFSET[0], CAMERA_OFFSET[1], CAMERA_TARGET[2] + CAMERA_OFFSET[2]], fov: CAMERA_FOV, near: 0.5, far: 200 }}
             gl={{ antialias: true, powerPreference: 'high-performance' }}
           >
             <PerformanceMonitor onDecline={() => setDegraded(true)} />

@@ -1,0 +1,151 @@
+/* ─── DOMINIO · Telefoni e tablet stretti ─────────────────────────────────────
+   Caricato per ultimo: corregge solo il layout, senza toccare colori o token.
+   "Stretto" = sotto i 768 px OPPURE telefono in orizzontale (poca altezza).
+   La stessa condizione è in hooks/useIsNarrow.ts: tenerle allineate.
+─────────────────────────────────────────────────────────────────────────────── */
+
+@media (max-width: 768px), (max-height: 520px) and (max-width: 1024px) {
+  /* La partita occupa esattamente lo schermo: niente scroll di pagina,
+     la mappa prende tutto lo spazio tra la barra del turno e il cassetto. */
+  .game {
+    height: 100dvh; min-height: 0; overflow: hidden; gap: 8px;
+    padding:
+      max(8px, env(safe-area-inset-top))
+      max(var(--gutter), env(safe-area-inset-right))
+      calc(56px + env(safe-area-inset-bottom))
+      max(var(--gutter), env(safe-area-inset-left));
+  }
+  .game__main { grid-template-columns: minmax(0, 1fr); min-height: 0; }
+  .stage { height: auto; min-height: 0; aspect-ratio: auto; }
+  .b3d-root { min-height: 0; }
+
+  /* Barra superiore compatta */
+  .topbar { gap: 8px; }
+  .brand-sub { display: none; }
+  .brand-mark { font-size: 18px; letter-spacing: 0.16em; }
+  .topbar__actions { gap: 6px; }
+
+  /* Barra del turno: riga 1 chi gioca + fasi, riga 2 controlli, riga 3 suggerimento */
+  .turnbar { grid-template-columns: minmax(0, 1fr) auto; gap: 8px 10px; padding: 8px 10px 8px 14px; }
+  .turn-id { gap: 8px; }
+  .turn-id__emblem { width: 34px; height: 34px; }
+  .turn-id__emblem img { width: 24px; height: 24px; }
+  .turn-id__name { font-size: 15px; overflow: hidden; text-overflow: ellipsis; }
+  .turn-id__leader { display: none; }
+  .stepper { grid-column: auto; grid-row: auto; margin: 0; padding: 3px; justify-content: flex-end; }
+  .stepper__step { padding: 3px; font-size: 12px; gap: 6px; }
+  .stepper__step.is-active { padding-right: 10px; }
+  .stepper__label { display: none; }
+  .stepper__step.is-active .stepper__label { display: inline; }
+  .turnbar__controls { grid-column: 1 / -1; grid-row: 2; flex-wrap: nowrap; justify-content: flex-end; gap: 8px; min-width: 0; }
+  .turnbar__controls .btn { flex: 1 1 auto; min-width: 0; padding: 0 10px; }
+  .turnbar__hint { grid-row: 3; margin-top: 0; font-size: 12px; line-height: 1.35; }
+
+  /* Rinforzi: numero grande sopra l'etichetta, così la riga resta su una linea */
+  .budget { display: grid; justify-items: center; line-height: 1; font-size: 10px; letter-spacing: 0.04em; white-space: nowrap; flex-shrink: 0; }
+  .budget strong { margin: 0 0 2px; vertical-align: 0; font-size: 20px; }
+  .troops { flex-shrink: 0; }
+  .cpu-thinking { font-size: 12.5px; }
+
+  /* Sovrapposizioni sulla mappa: a tutta larghezza, testi più compatti */
+  .coach { left: 8px; right: 8px; top: 8px; width: auto; padding: 8px 10px; }
+  .coach__text { font-size: 12.5px; }
+  .recap { left: 8px; right: 8px; top: 8px; width: auto; }
+  .etarget { top: 8px; width: calc(100% - 16px); }
+  .attackpanel { left: 8px; right: 8px; bottom: 8px; transform: none; min-width: 0; max-width: none; max-height: calc(100% - 16px); overflow-y: auto; }
+  .attackpanel__label { min-width: 0; }
+
+  /* Cassetto: rispetta la tacca in basso e non supera lo schermo */
+  .sheet { padding-bottom: env(safe-area-inset-bottom); }
+  .sheet--half { height: 52dvh; }
+  .sheet--full { height: calc(100dvh - 56px - env(safe-area-inset-top)); }
+  .sheet__body { overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+  .sheet .sidebar__body { padding-top: 10px; }
+
+  /* Finestre a schermo intero: scorrono dentro lo schermo */
+  .confirm, .occupy { padding: max(12px, env(safe-area-inset-top)) 12px max(12px, env(safe-area-inset-bottom)); }
+  .confirm__actions .btn, .occupy .btn { flex: 1; }
+  .combat { padding: 8px; }
+  .combat__card { max-height: calc(100dvh - 16px); }
+}
+
+/* Telefono in verticale: la carta 2D resta leggibile (altezza piena) e si
+   scorre in orizzontale col dito; GameMap la centra all'apertura. */
+@media (max-width: 768px) and (orientation: portrait) {
+  .map2d { overflow: auto hidden; justify-content: flex-start; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+  .map2d__svg { flex: none; width: auto; height: 100%; max-height: 520px; aspect-ratio: 800 / 560; }
+}
+
+/* Pannello d'attacco compatto: etichetta stretta, controlli a tutta larghezza */
+@media (max-width: 560px), (max-height: 520px) and (max-width: 1024px) {
+  .attackpanel { gap: 6px; padding: 8px 10px; }
+  .attackpanel__row { gap: 4px 8px; }
+  .attackpanel__label { flex: 0 0 auto; min-width: 44px; font-size: 10px; letter-spacing: 0.1em; white-space: nowrap; }
+  .attackpanel__row .seg { flex: 1 1 0; min-width: 0; }
+  .attackpanel__row .seg__btn { flex: 1; }
+  .attackpanel__note { font-size: 11.5px; flex: 1 1 0; min-width: 0; }
+  .attackpanel__row .seg--sm .seg__btn { padding: 0 6px; }
+  .attackpanel .btn--sodium { width: 100%; }
+}
+
+/* Tablet stretti in verticale: i riquadri sulla mappa non serve che siano a tutta larghezza */
+@media (min-width: 561px) and (max-width: 768px) {
+  .coach, .recap { right: auto; width: min(420px, calc(100% - 16px)); }
+  .attackpanel { left: 50%; right: auto; transform: translateX(-50%); width: min(460px, calc(100% - 16px)); }
+}
+
+/* Telefoni piccoli (≤ 380 px): via il "Tutte" del selettore, resta − / + */
+@media (max-width: 380px) {
+  .turnbar__controls .troops__all { display: none; }
+  .brand-mark { font-size: 16px; letter-spacing: 0.12em; }
+}
+
+/* Telefono in orizzontale: tutto il turno su una riga, la mappa guadagna altezza */
+@media (max-height: 520px) and (max-width: 1024px) and (min-width: 569px) {
+  .game { gap: 6px; padding-top: max(6px, env(safe-area-inset-top)); }
+  .turnbar { grid-template-columns: auto auto minmax(0, 1fr); padding: 6px 10px 6px 14px; }
+  .turnbar__controls { grid-column: auto; grid-row: auto; }
+  .turnbar__controls .btn { flex: 0 1 auto; }
+  .turnbar__hint { display: none; }
+  .turn-id__emblem { width: 30px; height: 30px; }
+  .turn-id__emblem img { width: 22px; height: 22px; }
+  .turn-id__night { display: none; }
+  .sheet--half { height: 70dvh; }
+  .coach { right: auto; width: min(360px, calc(100% - 16px)); }
+  .recap { left: auto; width: min(300px, calc(100% - 16px)); }
+  /* pannello d'attacco come colonna a destra: la mappa resta visibile a sinistra */
+  .attackpanel { left: auto; right: 8px; top: 8px; bottom: 8px; transform: none; width: min(360px, 48%); overflow-y: auto; }
+  .tinfo, .recap { max-height: calc(100% - 16px); overflow-y: auto; }
+
+  /* Scontro su due colonne: piazza 3D a sinistra, esito e comandi a destra */
+  .combat__card {
+    width: min(900px, 100%); max-height: calc(100dvh - 16px);
+    grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); align-content: center; gap: 8px 14px; padding: 12px;
+  }
+  .combat__card > * { grid-column: 2; }
+  .combat__card > .combat__stage { grid-column: 1; grid-row: 1 / span 6; height: calc(100dvh - 40px); max-height: 340px; align-self: center; }
+  .combat__head { grid-template-columns: 1fr; gap: 4px; }
+  .combat__side--end { flex-direction: row; text-align: left; }
+  .combat__vs { display: none; }
+  .combat__lore { display: none; }
+  .combat__outcome { min-height: 0; }
+  .combat__actions .btn { flex: 1; min-width: 0; }
+}
+
+/* Carta 2D in orizzontale: più larga del pannello, si scorre in tutte le direzioni */
+@media (max-height: 520px) and (max-width: 1024px) and (orientation: landscape) {
+  .map2d { overflow: auto; display: block; overscroll-behavior: contain; }
+  .map2d__svg { width: max(100%, 760px); height: auto; aspect-ratio: 800 / 560; }
+}
+
+/* ─── Lobby e prologo ─────────────────────────────────────────────────────── */
+@media (max-width: 560px) {
+  .lobby { gap: 22px; padding-left: max(var(--gutter), env(safe-area-inset-left)); padding-right: max(var(--gutter), env(safe-area-inset-right)); }
+  .lobby__row { gap: 8px 12px; }
+  .lobby__row .seg { flex: 1 1 auto; }
+  .lobby__row .seg .seg__btn { flex: 1; }
+  .pcard { padding: 12px; }
+  .pcard__top .seg__btn { padding: 0 10px; }
+  .fchip { font-size: 11.5px; }
+  .dossier__head { flex-wrap: wrap; row-gap: 2px; }
+}
