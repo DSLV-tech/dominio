@@ -142,6 +142,7 @@ const SFX: Readonly<Record<SfxName, SfxFn>> = {
 
   impact: (c, t, k) => {
     tone(c, t, { type: 'sine', freq: 130, to: 38, gain: 0.7 * k, decay: 0.45 });
+    tone(c, t, { type: 'triangle', freq: 280, to: 90, gain: 0.3 * k, decay: 0.28 }); // corpo udibile sul telefono
     noise(c, t, { filter: 'lowpass', freq: 900, to: 120, gain: 0.45 * k, decay: 0.3, wet: 0.25 });
   },
 
@@ -199,7 +200,7 @@ const SFX: Readonly<Record<SfxName, SfxFn>> = {
 
   eliminated: (c, t, k) => {
     // gong
-    for (const [r, g] of [[1, 0.3], [1.48, 0.18], [2.3, 0.12], [3.1, 0.08]] as const) {
+    for (const [r, g] of [[1, 0.3], [1.48, 0.18], [2.3, 0.12], [3.1, 0.08], [4.2, 0.06], [5.6, 0.04]] as const) {
       tone(c, t, { type: 'sine', freq: 82 * r, gain: g * k, attack: 0.02, decay: 2.4, wet: 0.7 });
     }
   },

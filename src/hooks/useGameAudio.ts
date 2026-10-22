@@ -26,14 +26,23 @@ export function useAudioUnlock(): void {
     const onVisibility = (): void => {
       if (document.hidden) audio.suspend(); else audio.resume();
     };
-    window.addEventListener('pointerdown', unlock, { passive: true });
+    // iOS sblocca l'audio solo su touchend/click (non su pointerdown/touchstart).
+    // Gli ascoltatori restano attivi: se iOS interrompe l'audio (blocco schermo,
+    // telefonata) il tocco successivo lo riprende.
+    window.addEventListener('touchend', unlock, { passive: true });
+    window.addEventListener('pointerup', unlock, { passive: true });
     window.addEventListener('keydown', unlock);
+    window.addEventListener('click', unlock, true);
     window.addEventListener('click', onClick, true);
+    window.addEventListener('pageshow', onVisibility);
     document.addEventListener('visibilitychange', onVisibility);
     return () => {
-      window.removeEventListener('pointerdown', unlock);
+      window.removeEventListener('touchend', unlock);
+      window.removeEventListener('pointerup', unlock);
       window.removeEventListener('keydown', unlock);
+      window.removeEventListener('click', unlock, true);
       window.removeEventListener('click', onClick, true);
+      window.removeEventListener('pageshow', onVisibility);
       document.removeEventListener('visibilitychange', onVisibility);
     };
   }, []);

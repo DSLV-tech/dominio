@@ -41,6 +41,7 @@ export class MusicDirector {
   private nextBeatTime = 0;
   private beatIndex = 0;
   private mood: MusicMood = 'calm';
+  private moodSince = 0;
 
   private readonly ctx: AudioContext;
   private readonly reverb: AudioNode;
@@ -78,6 +79,7 @@ export class MusicDirector {
   setMood(mood: MusicMood): void {
     if (mood === this.mood) return;
     this.mood = mood;
+    this.moodSince = this.ctx.currentTime;
     this.applyMix(mood === 'combat' ? 0.35 : 1.2);
   }
 
@@ -88,6 +90,8 @@ export class MusicDirector {
   }
 
   private schedule(): void {
+    // dopo una sospensione lunga (iOS) non recuperare i battiti persi in raffica
+    if (this.nextBeatTime < this.ctx.currentTime - 0.5) this.nextBeatTime = this.ctx.currentTime + 0.05;
     while (this.nextBeatTime < this.ctx.currentTime + LOOKAHEAD_S) {
       this.playBeat(this.beatIndex, this.nextBeatTime);
       this.nextBeatTime += BEAT;
@@ -107,11 +111,18 @@ export class MusicDirector {
     // spazzole: 2 e 4 (swing); crome con la tensione
     if (beatInBar % 2 === 1) this.brush(t, 0.5);
     this.brush(t + BEAT * 0.66, walking ? 0.35 : 0.18);
-    // timpani e ostinato
-    this.drum(t, beatInBar === 0 ? 1 : 0.55);
-    if (beatInBar === 3) this.drum(t + BEAT * 0.5, 0.4);
-    this.ostinato(chord.root + 12, t);
-    this.ostinato(chord.root + 12, t + BEAT / 2);
+    // timpani e ostinato — a strato muto da qualche secondo non si creano nemmeno i nodi
+    // (meno lavoro per la CPU del telefono; la dissolvenza in uscita ha già finito)
+    const settled = t - this.moodSince > 5;
+    const mix = MIX[this.mood];
+    if (mix.drum > 0 || !settled) {
+      this.drum(t, beatInBar === 0 ? 1 : 0.55);
+      if (beatInBar === 3) this.drum(t + BEAT * 0.5, 0.4);
+    }
+    if (mix.ostinato > 0 || !settled) {
+      this.ostinato(chord.root + 12, t);
+      this.ostinato(chord.root + 12, t + BEAT / 2);
+    }
   }
 
   private pad(notes: readonly number[], t: number, dur: number): void {
@@ -134,12 +145,15 @@ export class MusicDirector {
   private pluck(note: number, t: number): void {
     const o = this.ctx.createOscillator(); o.type = 'triangle'; o.frequency.value = midi(note);
     const s = this.ctx.createOscillator(); s.type = 'sine'; s.frequency.value = midi(note) / 2;
+    // ottava sopra: gli altoparlanti dei telefoni non riproducono sotto ~150 Hz
+    const h = this.ctx.createOscillator(); h.type = 'triangle'; h.frequency.value = midi(note) * 2;
+    const hg = this.ctx.createGain(); hg.gain.value = 0.45;
     const g = this.ctx.createGain();
     g.gain.setValueAtTime(0.0001, t);
     g.gain.exponentialRampToValueAtTime(0.35, t + 0.01);
     g.gain.exponentialRampToValueAtTime(0.0001, t + BEAT * 0.95);
-    o.connect(g); s.connect(g); g.connect(this.bus.bass);
-    o.start(t); s.start(t); o.stop(t + BEAT); s.stop(t + BEAT);
+    o.connect(g); s.connect(g); h.connect(hg); hg.connect(g); g.connect(this.bus.bass);
+    o.start(t); s.start(t); h.start(t); o.stop(t + BEAT); s.stop(t + BEAT); h.stop(t + BEAT);
   }
 
   private brush(t: number, k: number): void {
@@ -161,6 +175,14 @@ export class MusicDirector {
     g.gain.exponentialRampToValueAtTime(0.6 * k, t + 0.008);
     g.gain.exponentialRampToValueAtTime(0.0001, t + 0.5);
     o.connect(g); g.connect(this.bus.drum);
+    // "pelle" del timpano più alta: si sente anche senza bassi
+    const o2 = this.ctx.createOscillator(); o2.type = 'triangle';
+    o2.frequency.setValueAtTime(230, t); o2.frequency.exponentialRampToValueAtTime(95, t + 0.2);
+    const g2 = this.ctx.createGain();
+    g2.gain.setValueAtTime(0.0001, t);
+    g2.gain.exponentialRampToValueAtTime(0.22 * k, t + 0.006);
+    g2.gain.exponentialRampToValueAtTime(0.0001, t + 0.22);
+    o2.connect(g2); g2.connect(this.bus.drum); o2.start(t); o2.stop(t + 0.25);
     const w = this.ctx.createGain(); w.gain.value = 0.25; g.connect(w); w.connect(this.reverb);
     o.start(t); o.stop(t + 0.55);
   }
