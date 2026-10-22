@@ -151,3 +151,60 @@
   .fchip { font-size: 11.5px; }
   .dossier__head { flex-wrap: wrap; row-gap: 2px; }
 }
+
+/* ─── Schermi bassi (telefono in orizzontale): testi più compatti ───────────
+   Prologo, interludi, prima pagina finale e lobby devono stare nello schermo
+   (o quasi) senza scorrere; il cassetto usa la larghezza su due colonne. */
+@media (max-height: 520px) and (max-width: 1024px) {
+  /* Prologo */
+  .prologue {
+    gap: 10px;
+    padding: max(10px, env(safe-area-inset-top)) max(var(--gutter), env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom)) max(var(--gutter), env(safe-area-inset-left));
+  }
+  .prologue__masthead .brand-mark { font-size: 16px; }
+  .prologue__paper { font-size: 13px; }
+  .prologue__page { gap: 8px; width: min(760px, 100%); }
+  .prologue__title { font-size: clamp(24px, 8vh, 36px); }
+  .prologue__text { font-size: 15px; line-height: 1.45; }
+  .prologue__nav { width: min(760px, 100%); }
+  .prologue__actions .btn { min-height: 38px; }
+
+  /* Interludio d'atto */
+  .interlude { padding: 8px max(12px, env(safe-area-inset-right)) 8px max(12px, env(safe-area-inset-left)); }
+  .interlude__card { width: min(760px, 100%); max-height: calc(100dvh - 16px); gap: 8px; padding: 14px 20px; }
+  .interlude__title { font-size: clamp(22px, 7vh, 30px); }
+  .interlude__body { gap: 6px; font-size: 14.5px; line-height: 1.45; }
+  .clue { padding: 8px 12px; }
+  .clue__text { font-size: 14.5px; }
+  .interlude__footer .btn { min-height: 38px; }
+
+  /* Prima pagina finale */
+  .victory { padding: 8px; }
+  .frontpage { width: min(820px, 100%); max-height: calc(100dvh - 16px); gap: 8px; padding: 14px 20px; }
+  .frontpage__masthead { font-size: 10px; padding-bottom: 4px; }
+  .frontpage__headline { font-size: clamp(22px, 7vh, 30px); }
+  .frontpage__deck { font-size: 14px; }
+  .frontpage__body { font-size: 14px; line-height: 1.45; columns: 2 260px; }
+  .frontpage__body::first-letter { font-size: 36px; }
+  .frontpage .btn--xl, .frontpage .btn { min-height: 40px; }
+
+  /* Lobby */
+  .lobby {
+    gap: 14px;
+    padding: max(12px, env(safe-area-inset-top)) max(var(--gutter), env(safe-area-inset-right)) 20px max(var(--gutter), env(safe-area-inset-left));
+  }
+  .lobby__head { gap: 4px; }
+  .brand-mark--xl { font-size: 30px; }
+  .lobby__sub { font-size: 15px; }
+  .lobby__config { gap: 10px; }
+  .lobby__row { gap: 8px 12px; }
+  .pcard { gap: 8px; padding: 10px; }
+  .dossier { gap: 4px; padding: 8px 10px; }
+  .dossier__motto { font-size: 14px; }
+  .dossier__motive { display: none; }      /* il movente resta nel prologo e nella Gazzetta */
+
+  /* Cassetto: fazioni a sinistra, schede a destra */
+  .sheet .sidebar { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); align-items: start; gap: 10px; }
+  .sheet .prow { padding: 6px 8px 8px; }
+  .sheet .prow__stats dd { font-size: 13px; }
+}

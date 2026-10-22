@@ -205,14 +205,37 @@ export function GameMap() {
       el.scrollLeft = Math.max(0, (el.scrollWidth - el.clientWidth) / 2);
       el.scrollTop = Math.max(0, (el.scrollHeight - el.clientHeight) / 2);
     };
+    // Safari iOS a volte non ridisegna parte dei testi SVG (nomi e truppe di
+    // alcune targhe) quando i font arrivano o la carta scorre: un ritocco
+    // invisibile dell'opacità forza il ridisegno di tutta la carta.
+    let raf = 0;
+    const repaint = () => {
+      const svg = el.firstElementChild as SVGSVGElement | null;
+      if (!svg) return;
+      svg.style.opacity = '0.999';
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => { svg.style.opacity = ''; });
+    };
+    let scrollTimer = 0;
+    const onScroll = () => { window.clearTimeout(scrollTimer); scrollTimer = window.setTimeout(repaint, 120); };
+
     center();
+    let alive = true;
+    void document.fonts?.ready.then(() => { if (alive) repaint(); });
     let last = `${el.clientWidth}x${el.clientHeight}`;
     const ro = new ResizeObserver(() => {
       const size = `${el.clientWidth}x${el.clientHeight}`;
-      if (size !== last) { last = size; center(); }
+      if (size !== last) { last = size; center(); repaint(); }
     });
     ro.observe(el);
-    return () => ro.disconnect();
+    el.addEventListener('scroll', onScroll, { passive: true });
+    return () => {
+      alive = false;
+      ro.disconnect();
+      el.removeEventListener('scroll', onScroll);
+      window.clearTimeout(scrollTimer);
+      cancelAnimationFrame(raf);
+    };
   }, []);
   const { highlightPairs, getVariant, handleClick, handleHover } = useTerritoryInteraction();
 

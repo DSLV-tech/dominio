@@ -11,6 +11,7 @@ import type { FactionId, GameConfig, MovementRule, PlayerCount } from '../../typ
 import { SegmentedControl, type SegmentOption } from '../common/SegmentedControl';
 import { cssVars } from '../common/cssVars';
 import { FactionEmblem } from '../common/FactionEmblem';
+import { InstallHint } from './InstallHint';
 
 interface PlayerDraft {
   readonly name: string;
@@ -148,6 +149,7 @@ export function SetupScreen() {
         <span className="brand-mark brand-mark--xl">DOMINIO</span>
         <p className="lobby__sub">Trenta notti. Quattro fazioni. Una sola città.</p>
         <button type="button" className="link" onClick={replayPrologue}>Rivedi il prologo</button>
+        <InstallHint />
       </header>
 
       <section className="lobby__config" aria-label="Configura la partita">

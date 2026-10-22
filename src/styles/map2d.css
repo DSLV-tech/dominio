@@ -138,6 +138,9 @@
    via variabili (potevano restare col colore iniziale, scuro) */
 @supports (-webkit-touch-callout: none) {
   .tnode__body, .tnode__rim, .tnode__band, .tnode__coin, .zone__panel { transition: none; }
+  /* la carta come un unico livello: niente porzioni (tile) lasciate indietro
+     nel ridisegno mentre la si scorre col dito */
+  .map2d__svg { transform: translateZ(0); }
 }
 
 @media (prefers-reduced-motion: reduce) {

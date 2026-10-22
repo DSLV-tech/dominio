@@ -456,6 +456,8 @@
   .btn, .seg__btn, .troops__btn { transition: none; }
 }
 .lobby__hint { margin: 0; font-size: 12px; color: var(--muted); }
+.install-hint { margin-top: 2px; }
+.install-hint--ios { max-width: 340px; font-size: 12px; color: var(--muted); text-align: center; }
 
 /* ─── Schermi stretti: cassetto dal basso ─────────────────────────────────── */
 .sheet {
