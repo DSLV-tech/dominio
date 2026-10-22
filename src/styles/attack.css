@@ -1,0 +1,111 @@
+/* ─── Attacco: pannello dadi/modalità, occupazione, riepilogo blitz ───────── */
+
+.attackpanel {
+  position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%);
+  z-index: 20; display: flex; flex-direction: column; gap: 8px;
+  min-width: min(340px, calc(100% - 24px)); max-width: calc(100% - 24px);
+  padding: 10px 12px; border-radius: var(--radius-m);
+  background: var(--surface-1); border: 1px solid var(--line-strong);
+  box-shadow: var(--bevel), var(--shadow-m); color: var(--text);
+}
+.attackpanel__row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.attackpanel__label {
+  min-width: 64px; font: 600 11px/1 var(--font-display); letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--muted);
+}
+.attackpanel__note { font-size: 12px; color: var(--muted); }
+.attackpanel__check { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); cursor: pointer; }
+.attackpanel__check input { accent-color: var(--sodium); }
+
+.occupy {
+  position: fixed; inset: 0; z-index: 990; display: grid; place-items: center; padding: 12px;
+  background: rgba(11, 13, 16, 0.6);
+}
+.occupy__card {
+  display: flex; flex-direction: column; gap: 12px; width: min(380px, 100%);
+  padding: 18px; border-radius: var(--radius-l);
+  background: var(--surface-1); border: 1px solid var(--line-strong);
+  box-shadow: var(--bevel), var(--shadow-l);
+}
+.occupy__title { margin: 0; font: 600 18px/1.1 var(--font-display); letter-spacing: 0.08em; text-transform: uppercase; color: var(--sodium); }
+.occupy__text { margin: 0; font-size: 13px; color: var(--muted); }
+.occupy__stepper { display: flex; align-items: center; gap: 12px; }
+.occupy__total { font-size: 13px; color: var(--text); }
+
+.blitz {
+  display: flex; flex-direction: column; gap: 6px; margin-top: 8px; padding: 8px 10px;
+  border-radius: var(--radius-s); background: var(--ink-0); box-shadow: var(--sunken);
+  font-size: 12px; color: var(--muted);
+}
+.blitz strong { color: var(--sodium); }
+.blitz__bar { display: flex; height: 6px; border-radius: 3px; overflow: hidden; background: var(--ink-2); }
+.blitz__bar i { display: block; height: 100%; }
+.blitz__bar .is-att { background: var(--phase-attack); }
+.blitz__bar .is-def { background: var(--phase-move); }
+.attackpanel__reprisal { margin: 0; font-size: 12px; color: var(--sodium); }
+
+/* ─── Carte evento con bersaglio ─────────────────────────────────────────── */
+.etarget {
+  position: absolute; left: 50%; top: 12px; transform: translateX(-50%); z-index: 25;
+  display: flex; flex-direction: column; gap: 8px;
+  width: min(420px, calc(100% - 24px)); padding: 10px 12px; border-radius: var(--radius-m);
+  background: var(--surface-1); border: 1px solid var(--sodium); box-shadow: var(--bevel), var(--shadow-m);
+}
+.etarget__head { display: flex; align-items: center; gap: 10px; }
+.etarget__name { flex: 1; font: 600 14px/1 var(--font-display); letter-spacing: 0.1em; text-transform: uppercase; color: var(--sodium); }
+.etarget__step { font-size: 11px; color: var(--muted); }
+.etarget__text { margin: 0; font-size: 13px; color: var(--text); }
+.etarget__row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.etarget__picked { font-size: 13px; color: var(--text-strong); }
+.etarget__players, .etarget__cards ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.etarget__player {
+  display: flex; align-items: center; gap: 10px; width: 100%; padding: 6px 8px; text-align: left;
+  border: 1px solid var(--line-strong); border-radius: var(--radius-s); background: var(--surface-2);
+  color: var(--text); cursor: pointer; box-shadow: var(--bevel);
+}
+.etarget__player:hover { background: var(--surface-3); }
+.etarget__player-text { display: flex; flex-direction: column; }
+.etarget__player-text small { color: var(--muted); font-size: 11px; }
+.etarget__cards { display: flex; flex-direction: column; gap: 8px; }
+.etarget__card { display: flex; gap: 8px; align-items: center; font-size: 13px; cursor: pointer; }
+.etarget__card input { accent-color: var(--sodium); }
+.ecard__why { margin: 4px 0 0; font-size: 11px; color: var(--muted); }
+
+/* ─── Etichetta di zona controllata (3D) ─────────────────────────────────── */
+.zonetag {
+  display: inline-block; padding: 2px 9px; border: 1px solid; border-radius: 999px; white-space: nowrap;
+  background: rgba(11, 13, 16, 0.72); font: 600 11px/1.3 var(--font-display); letter-spacing: 0.1em; text-transform: uppercase;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
+  border-color: color-mix(in srgb, currentColor 45%, transparent) !important;
+  opacity: 0.85; user-select: none;
+}
+/* zona controllata: targhetta piena, filo nel colore della fazione */
+.zonetag.is-owned { opacity: 1; background: rgba(11, 13, 16, 0.88); border-color: currentColor !important; box-shadow: 0 0 10px color-mix(in srgb, currentColor 40%, transparent), 0 2px 8px rgba(0, 0, 0, 0.5); }
+.zonetag__bonus { opacity: 0.85; }
+.prow__zones { margin: 4px 0 0; font-size: 11px; color: var(--sodium); }
+
+/* ─── Riepilogo del turno CPU ────────────────────────────────────────────── */
+.recap {
+  position: absolute; right: 12px; top: 12px; z-index: 22; width: min(300px, calc(100% - 24px));
+  padding: 10px 14px 12px; border: 1px solid var(--line-strong); border-left-width: 4px; border-radius: var(--radius-m);
+  background: var(--surface-1); box-shadow: var(--bevel), var(--shadow-m); color: var(--text);
+}
+.recap__title { margin: 0 0 6px; font: 600 14px/1.2 var(--font-display); letter-spacing: 0.08em; text-transform: uppercase; color: var(--sodium); }
+.recap__list { margin: 0; padding-left: 16px; font-size: 13px; display: flex; flex-direction: column; gap: 2px; }
+.recap__close { position: absolute; right: 6px; top: 4px; border: 0; background: none; color: var(--muted); font-size: 18px; cursor: pointer; }
+
+/* ─── Impostazioni ──────────────────────────────────────────────────────── */
+.settings-sec { display: flex; flex-direction: column; gap: 8px; padding-top: 8px; border-top: 1px solid var(--line); }
+.settings-sec__title { margin: 0; font: 600 11px/1 var(--font-display); letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+.settings-sec__check { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); cursor: pointer; }
+.settings-sec__check input { accent-color: var(--sodium); }
+
+/* ─── Guida del primo turno ───────────────────────────────────────────────── */
+.coach {
+  position: absolute; left: 12px; top: 12px; z-index: 24; width: min(320px, calc(100% - 24px));
+  display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; border-radius: var(--radius-m);
+  background: var(--surface-1); border: 1px solid var(--sodium); box-shadow: var(--bevel), var(--shadow-m);
+}
+.coach__title { font: 600 13px/1 var(--font-display); letter-spacing: 0.1em; text-transform: uppercase; color: var(--sodium); }
+.coach__text { margin: 0; font-size: 13px; color: var(--text); }
+.coach__actions { display: flex; justify-content: flex-end; gap: 8px; }

@@ -1,0 +1,265 @@
+/* ─── DOMINIO · Scontro, stemmi, controlli audio ──────────────────────────────
+   Il palcoscenico 3D occupa il centro della scheda; l'HTML attorno porta le
+   informazioni che devono restare leggibili (chi, dadi, perdite, esito).
+─────────────────────────────────────────────────────────────────────────────── */
+
+/* ── Stemmi ───────────────────────────────────────────────────────────────── */
+.emblem {
+  display: inline-block;
+  flex-shrink: 0;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+  user-select: none;
+}
+.emblem--fallback {
+  width: var(--emblem-size, 28px);
+  height: var(--emblem-size, 28px);
+  border-radius: 6px 6px 50% 50%;
+  background: var(--emblem);
+  box-shadow: inset 0 0 0 2px rgba(212, 166, 64, 0.8);
+}
+
+/* ── Modale di combattimento ──────────────────────────────────────────────── */
+.combat {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 12px;
+  background: rgba(4, 6, 9, 0.8);
+  backdrop-filter: blur(3px);
+}
+
+.combat__card {
+  width: min(640px, 100%);
+  max-height: calc(100dvh - 24px);
+  overflow: auto;
+  display: grid;
+  gap: 12px;
+  padding: clamp(14px, 3vw, 22px);
+  background: var(--ink-1);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-l);
+  box-shadow: var(--shadow-l);
+  animation: modal-slide-up 280ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.combat__head {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 8px;
+}
+.combat__side { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.combat__side--end { flex-direction: row-reverse; text-align: right; }
+.combat__side-text { display: grid; min-width: 0; line-height: 1.2; }
+.combat__role {
+  font: 600 10px/1 var(--font-mono);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+.combat__name {
+  font: 600 16px/1.2 var(--font-display);
+  letter-spacing: 0.03em;
+  color: var(--side);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.combat__terr { font-size: 12px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.combat__vs { font-size: 20px; color: var(--sodium); text-shadow: 0 0 12px var(--sodium-dim); }
+
+.combat__lore {
+  margin: 0;
+  font: italic 14px/1.45 var(--font-serif);
+  color: var(--muted);
+  text-align: center;
+}
+
+.combat__stage {
+  position: relative;
+  height: clamp(230px, 44vh, 360px);
+  border-radius: var(--radius-m);
+  overflow: hidden;
+  background: radial-gradient(120% 90% at 50% 30%, #1a1f27, var(--ink-0));
+  border: 1px solid var(--line);
+}
+.arena3d__canvas { position: absolute !important; inset: 0; }
+
+.combat__loading {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 10px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.combat__cpu {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 2px 8px;
+  border-radius: 999px;
+  font: 600 10px/1.6 var(--font-mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  background: rgba(11, 13, 16, 0.7);
+  border: 1px solid var(--line);
+}
+
+/* valori dei dadi sovrapposti alla scena, uno per lato */
+.combat__tallies {
+  position: absolute;
+  inset: auto 10px 10px 10px;
+  display: flex;
+  justify-content: space-between;
+  pointer-events: none;
+}
+.tally {
+  display: flex;
+  gap: 5px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 260ms ease, transform 260ms ease;
+}
+.tally[data-visible='true'] { opacity: 1; transform: none; }
+.tally__die {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  font: 700 15px/1 var(--font-mono);
+  background: rgba(11, 13, 16, 0.82);
+  border: 1.5px solid var(--line-strong);
+  color: var(--text);
+}
+.tally--attacker .tally__die { border-color: #8c2a24; }
+.tally--defender .tally__die { border-color: #b8ad95; }
+.tally__die.is-won { color: var(--ok); border-color: var(--ok); box-shadow: 0 0 10px rgba(76, 195, 138, 0.35); }
+.tally__die.is-lost { color: var(--faint); border-color: var(--line); text-decoration: line-through; }
+
+.combat__outcome {
+  display: grid;
+  gap: 8px;
+  min-height: 70px;
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 300ms ease, transform 300ms ease;
+}
+.combat__outcome[data-visible='true'] { opacity: 1; transform: none; }
+.combat__losses { display: flex; justify-content: space-between; gap: 12px; font-size: 13px; font-weight: 600; }
+.combat__losses .is-loss { color: var(--danger); }
+.combat__losses .is-ok { color: var(--ok); }
+.combat__banner {
+  margin: 0;
+  padding: 10px 14px;
+  border-radius: var(--radius-m);
+  text-align: center;
+  font: 600 18px/1.2 var(--font-display);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  animation: banner-in 420ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+.combat__banner.is-win { color: var(--ok); background: rgba(76, 195, 138, 0.1); border: 1.5px solid var(--ok); }
+.combat__banner.is-hold { color: var(--danger); background: rgba(239, 90, 76, 0.1); border: 1.5px solid var(--danger); }
+
+@keyframes banner-in {
+  from { opacity: 0; transform: scale(0.85); letter-spacing: 0.25em; }
+  to   { opacity: 1; transform: none; letter-spacing: 0.05em; }
+}
+
+.combat__actions { display: flex; justify-content: flex-end; gap: 8px; }
+.combat__actions .btn { min-width: 120px; }
+.combat__actions kbd {
+  margin-left: 6px;
+  padding: 0 4px;
+  border: 1px solid var(--line-strong);
+  border-radius: 4px;
+  font: 500 10px/1.5 var(--font-mono);
+  color: var(--faint);
+}
+
+@media (max-width: 560px) {
+  .combat__name { font-size: 14px; }
+  .combat__side .emblem { width: 34px; height: 34px; }
+  .combat__lore { font-size: 13px; }
+  .combat__stage { height: clamp(220px, 36vh, 300px); }
+  .combat__actions .btn { flex: 1; min-width: 0; }
+}
+
+/* ── Dadi 2D (riserva senza WebGL) ───────────────────────────────────────── */
+.die2d-stage {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 16px;
+}
+.die2d-row { display: flex; gap: 8px; }
+.die2d-vs { font: 700 16px/1 var(--font-display); color: var(--faint); letter-spacing: 0.1em; }
+.die2d {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  font: 800 24px/1 var(--font-mono);
+  user-select: none;
+  transition: background 200ms, border-color 200ms, color 200ms, box-shadow 200ms;
+  border: 2px solid transparent;
+}
+.die2d--attack { background: #8c2019; color: #f4efe6; }
+.die2d--defense { background: #ece4d2; color: #16233f; }
+.die2d.is-rolling { animation: dice-spin 60ms linear infinite; }
+.die2d.is-settling { animation: dice-settle 220ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+.die2d.is-won { border-color: var(--ok); box-shadow: 0 0 14px rgba(76, 195, 138, 0.5); }
+.die2d.is-lost { opacity: 0.45; }
+
+/* ── Controlli audio ──────────────────────────────────────────────────────── */
+.audio-ctl { position: relative; display: flex; }
+.audio-ctl__mute { border-top-right-radius: 0; border-bottom-right-radius: 0; padding: 0 9px; }
+.audio-ctl__more { border-top-left-radius: 0; border-bottom-left-radius: 0; border-left: 0; padding: 0 7px; }
+.audio-ctl__mute.is-muted { color: var(--faint); }
+.audio-ctl__mute:not(.is-muted) { color: var(--sodium); }
+
+.audio-pop {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 50;
+  width: 240px;
+  display: grid;
+  gap: 10px;
+  padding: 12px 14px;
+  background: var(--ink-2);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-m);
+  box-shadow: var(--shadow-l);
+}
+.audio-pop__row { display: grid; grid-template-columns: 56px 1fr 28px; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); }
+.audio-pop__row input[type='range'] { width: 100%; accent-color: var(--sodium); }
+.audio-pop__row output { font: 500 11px/1 var(--font-mono); text-align: right; color: var(--text); }
+.audio-pop__note { margin: 0; font-size: 11px; color: var(--faint); }
+
+@media (prefers-reduced-motion: reduce) {
+  .combat__card, .combat__banner, .die2d.is-rolling, .die2d.is-settling { animation: none; }
+  .tally, .combat__outcome { transition: none; }
+}
+
+/* stemmi nei pannelli */
+.prow__name { display: inline-flex; align-items: center; gap: 6px; }
+.prow__emblem { width: 22px; height: 22px; }
+.dossier__faction { display: inline-flex; align-items: center; gap: 8px; }
+.prow.is-out .prow__emblem { filter: grayscale(1) opacity(0.5); }

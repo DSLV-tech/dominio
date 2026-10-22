@@ -1,0 +1,114 @@
+/* ─── DOMINIO · Tema "Noir urbano" ─────────────────────────────────────────────
+   Inchiostro notturno + luce al sodio dei lampioni + carta di giornale per la
+   narrazione. Tutti i colori passano dai token: niente esadecimali sparsi.
+─────────────────────────────────────────────────────────────────────────────── */
+
+:root {
+  /* Superfici */
+  --ink-0: #0b0d10;           /* sfondo pagina */
+  --ink-1: #12161c;           /* pannelli */
+  --ink-2: #1a2029;           /* pannelli rialzati, input */
+  --ink-3: #242c37;           /* hover */
+  --line: #2a3340;
+  --line-strong: #3a4553;
+
+  /* Testo */
+  --text: #e9e5db;
+  --text-strong: #fbf8f1;
+  --muted: #929aa6;
+  --faint: #5e6772;
+
+  /* Accenti */
+  --sodium: #e8a33d;          /* lampione: accento principale */
+  --sodium-dim: rgba(232, 163, 61, 0.14);
+  --paper: #efe7d6;           /* Gazzetta */
+  --paper-2: #e4d9c3;
+  --paper-ink: #1f1b14;
+  --paper-muted: #6b6152;
+
+  /* Fasi di gioco */
+  --phase-reinforce: #4cc38a;
+  --phase-attack: #ef5a4c;
+  --phase-move: #5ea8ff;
+
+  --danger: #ef5a4c;
+  --ok: #4cc38a;
+
+  /* Tipografia */
+  --font-display: 'Oswald', 'Arial Narrow', system-ui, sans-serif;
+  --font-ui: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, Menlo, monospace;
+  --font-serif: 'Newsreader', Georgia, 'Times New Roman', serif;
+
+  /* Misure */
+  --radius-s: 6px;
+  --radius-m: 10px;
+  --radius-l: 14px;
+  --gutter: clamp(10px, 1.6vw, 20px);
+  --shadow-l: 0 24px 64px rgba(0, 0, 0, 0.55);
+
+  /* Profondità: luce dall'alto, ombre morbide. Rendono l'interfaccia "fisica"
+     senza colori nuovi: solo luce e ombra sopra le superfici --ink. */
+  --bevel: inset 0 1px 0 rgba(255, 255, 255, 0.07), inset 0 -1px 0 rgba(0, 0, 0, 0.35);
+  --bevel-strong: inset 0 1px 0 rgba(255, 255, 255, 0.16), inset 0 -2px 0 rgba(0, 0, 0, 0.28);
+  --sunken: inset 0 2px 4px rgba(0, 0, 0, 0.45), inset 0 0 0 1px rgba(0, 0, 0, 0.25);
+  --shadow-s: 0 1px 2px rgba(0, 0, 0, 0.45), 0 3px 8px rgba(0, 0, 0, 0.25);
+  --shadow-m: 0 10px 28px rgba(0, 0, 0, 0.42), 0 2px 6px rgba(0, 0, 0, 0.3);
+  --surface-1: linear-gradient(180deg, #171c24 0%, #10141a 100%);
+  --surface-2: linear-gradient(180deg, #252d39 0%, #1a2029 100%);
+  --surface-3: linear-gradient(180deg, #2d3644 0%, #222a35 100%);
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  color-scheme: dark;
+  font: 15px/1.45 var(--font-ui);
+  color: var(--text);
+  background: var(--ink-0);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body { margin: 0; background: var(--ink-0); }
+
+body {
+  min-height: 100dvh;
+  /* alone di lampione in alto, molto discreto */
+  background:
+    radial-gradient(1200px 500px at 15% -10%, rgba(232, 163, 61, 0.07), transparent 60%),
+    var(--ink-0);
+}
+
+#root { min-height: 100dvh; }
+
+/* grana di carta/pellicola: toglie la piattezza ai grandi fondi scuri */
+body::before {
+  content: ''; position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: 0.045;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+#root { position: relative; z-index: 1; }
+
+h1, h2, h3 { margin: 0; color: var(--text-strong); }
+p { margin: 0; }
+
+button { font: inherit; color: inherit; }
+button:focus-visible,
+input:focus-visible,
+[role='button']:focus-visible {
+  outline: 2px solid var(--sodium);
+  outline-offset: 2px;
+}
+
+input { font: inherit; }
+
+::selection { background: var(--sodium); color: var(--ink-0); }
+
+/* scrollbar sottile coerente col tema */
+* { scrollbar-width: thin; scrollbar-color: var(--line-strong) transparent; }
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}

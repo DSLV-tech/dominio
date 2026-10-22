@@ -1,0 +1,14 @@
+export { rollDie, rollDice, maxAttackDice, maxDefendDice, resolveCombatRoll, resolveAttack, validateAttack, resolveAttackOrder, clampAttackDice, orderFromPrefs, hasTruce, isEffect, MAX_BLITZ_ROUNDS } from './combat';
+export { calculateReinforcements, baseReinforcements, zoneBonus, factionBonus, controlledZones } from './reinforcements';
+export { checkVictory, checkElimination, checkPoliticalControl, checkTotalDomination, updatePiazzaHold, getEliminatedPlayerIds } from './victory';
+export { createInitialGameState } from './setup';
+export { reachableFriendly } from './movement';
+export { summarizeTurn } from './recap';
+export { resolveEventCard, canPlayEventCard, getEventTargets } from './events';
+export { planAITurn, aiChooseAttack, aiChooseEvent, aiChooseMovement, aiChooseReinforcement, AI_MAX_ATTACKS_PER_TURN } from './ai';
+export type { CombatRoll, AttackValidationResult, Rng, AttackOrderContext } from './combat';
+export type { VictoryResult } from './victory';
+export type { EventCardContext, EventCardResult } from './events';
+export type { AITurnPlan, AIAttackDecision, AIMovementDecision, AIAction } from './ai';
+export { detectStoryBeats, filterNewsworthy, beatToDispatch } from './narrative';
+export type { NewsSelection } from './narrative';
