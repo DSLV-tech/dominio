@@ -487,6 +487,9 @@
 
 /* Bersagli touch comodi */
 @media (pointer: coarse) {
+  /* sotto i 16 px Safari iOS zooma la pagina quando si tocca il campo e non
+     torna indietro: tutto il gioco resterebbe ingrandito */
+  .input { font-size: 16px; height: 40px; }
   .troops__btn { width: 44px; height: 44px; }
   .btn--sm { min-height: 44px; }
   .seg__btn { min-height: 44px; }

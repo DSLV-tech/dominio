@@ -1,7 +1,8 @@
 // ─── TerritoryInfoCard ────────────────────────────────────────────────────────
 // Scheda sovrapposta alla mappa: territorio sotto il cursore (o selezionato),
 // con proprietario, truppe, quartiere e la riga di racconto del luogo.
-// Sta in alto, sul lato della mappa opposto al puntatore.
+// Sta in alto, sul lato della mappa opposto al puntatore. `compact`: versione
+// su due righe per la fascia sotto la mappa sui telefoni (MapDock).
 
 import { memo } from 'react';
 import { useGameStore } from '../../store/gameStore';
@@ -11,7 +12,12 @@ import {
 } from '../../data';
 import { useStageCursorSide } from '../../hooks/useStageCursorSide';
 
-export const TerritoryInfoCard = memo(function TerritoryInfoCard() {
+interface TerritoryInfoCardProps {
+  /** Versione compatta per la fascia sotto la mappa (telefoni). */
+  readonly compact?: boolean;
+}
+
+export const TerritoryInfoCard = memo(function TerritoryInfoCard({ compact = false }: TerritoryInfoCardProps) {
   const hovered  = useUIStore(s => s.hoveredTerritoryId);
   const selected = useUIStore(s => s.selectedTerritoryId);
   const id = hovered ?? selected;
@@ -31,7 +37,11 @@ export const TerritoryInfoCard = memo(function TerritoryInfoCard() {
   const faction = owner ? FACTION_DEFINITIONS[owner.factionId] : null;
 
   return (
-    <aside className={cursorSide === 'left' ? 'tinfo tinfo--right' : 'tinfo'} aria-live="polite" style={{ borderColor: faction?.color }}>
+    <aside
+      className={compact ? 'tinfo tinfo--compact' : cursorSide === 'left' ? 'tinfo tinfo--right' : 'tinfo'}
+      aria-live="polite"
+      style={{ borderColor: faction?.color }}
+    >
       <div className="tinfo__zone" style={{ color: zone?.color }}>
         {zone?.name}{def.isBottleneck && <span className="tinfo__star"> · ★ snodo</span>}
       </div>
@@ -41,7 +51,7 @@ export const TerritoryInfoCard = memo(function TerritoryInfoCard() {
         <span className="tinfo__troops">{troops} truppe</span>
         {barricade && <span className="tinfo__barricade">barricata</span>}
       </div>
-      <p className="tinfo__lore">{TERRITORY_LORE[id].line}</p>
+      {!compact && <p className="tinfo__lore">{TERRITORY_LORE[id].line}</p>}
     </aside>
   );
 });

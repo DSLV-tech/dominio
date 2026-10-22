@@ -72,6 +72,9 @@
 *, *::before, *::after { box-sizing: border-box; }
 
 html, body { margin: 0; background: var(--ink-0); }
+/* Safari iOS ingrandisce da solo il testo quando si gira il telefono:
+   le dimensioni le decide il CSS, non il browser */
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 
 body {
   min-height: 100dvh;

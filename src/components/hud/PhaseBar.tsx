@@ -8,27 +8,10 @@ import { useGameStore } from '../../store/gameStore';
 import { useUIStore } from '../../store/uiStore';
 import { FACTION_DEFINITIONS, FACTION_LORE } from '../../data';
 import type { GamePhase, Player } from '../../types';
+import { PHASES, PHASE_INDEX } from './phaseMeta';
 import { cssVars } from '../common/cssVars';
 import { FactionEmblem } from '../common/FactionEmblem';
 import { TroopStepper } from '../common/TroopStepper';
-
-type PlayablePhase = Extract<GamePhase, 'REINFORCEMENT' | 'ATTACK' | 'MOVEMENT'>;
-
-interface PhaseMeta {
-  readonly label: string;
-  readonly token: string;          // variabile CSS del colore
-  readonly hint: string;
-}
-
-const PHASES: ReadonlyArray<readonly [PlayablePhase, PhaseMeta]> = [
-  ['REINFORCEMENT', { label: 'Rinforzi',    token: 'var(--phase-reinforce)', hint: 'Tocca un tuo territorio per piazzare truppe.' }],
-  ['ATTACK',        { label: 'Attacco',     token: 'var(--phase-attack)',    hint: 'Scegli un tuo territorio con almeno 2 truppe, poi un bersaglio rosso.' }],
-  ['MOVEMENT',      { label: 'Spostamento', token: 'var(--phase-move)',      hint: 'Scegli da dove spostare, poi una destinazione verde. Poi chiudi il turno.' }],
-];
-
-const PHASE_INDEX: Readonly<Record<GamePhase, number>> = {
-  SETUP: -1, REINFORCEMENT: 0, ATTACK: 1, MOVEMENT: 2, EVENT_PHASE: 2, GAME_OVER: 3,
-};
 
 // ─── Sotto-componenti ─────────────────────────────────────────────────────────
 

@@ -18,6 +18,7 @@ import { AttackPanel } from './components/hud/AttackPanel';
 import { EventTargetBar } from './components/cards/EventTargetBar';
 import { TurnRecap } from './components/hud/TurnRecap';
 import { CoachMark } from './components/hud/CoachMark';
+import { MapDock } from './components/hud/MapDock';
 import { VictoryModal } from './components/modals/VictoryModal';
 import { PrologueScreen } from './components/story/PrologueScreen';
 import { ActInterlude } from './components/story/ActInterlude';
@@ -116,12 +117,18 @@ function GameScreen() {
           ) : (
             <GameMap />
           )}
-          <TerritoryInfoCard />
-          <AttackPanel />
-          <EventTargetBar />
-          <TurnRecap />
-          <CoachMark />
+          {/* sui telefoni questi riquadri stanno nella fascia sotto la mappa (MapDock) */}
+          {!narrow && (
+            <>
+              <TerritoryInfoCard />
+              <AttackPanel />
+              <EventTargetBar />
+              <TurnRecap />
+              <CoachMark />
+            </>
+          )}
         </section>
+        {narrow && <MapDock />}
         <Sidebar />
       </div>
 
