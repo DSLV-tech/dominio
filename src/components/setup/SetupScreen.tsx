@@ -3,7 +3,7 @@
 // il proprio dossier (leader, motto, movente, abilità) per legare la scelta
 // strategica alla storia.
 
-import { memo, useState } from 'react';
+import { memo, useId, useState } from 'react';
 import { useGameStore } from '../../store/gameStore';
 import { useStoryStore } from '../../store/storyStore';
 import { FACTION_DEFINITIONS, ALL_FACTION_IDS, FACTION_LORE, ZONE_DEFINITIONS } from '../../data';
@@ -25,8 +25,40 @@ const COUNT_OPTIONS: ReadonlyArray<SegmentOption<PlayerCount>> = [
   { value: 4, label: '4' },
 ];
 
+function leaderName(faction: FactionId): string {
+  return FACTION_LORE[faction].leader.split(' ')[0] ?? faction;
+}
+
 function makeDefault(index: number, faction: FactionId): PlayerDraft {
-  return { name: index === 0 ? 'Tu' : FACTION_LORE[faction].leader.split(' ')[0] ?? `CPU ${index}`, factionId: faction, isAI: index > 0 };
+  return { name: index === 0 ? 'Tu' : leaderName(faction), factionId: faction, isAI: index > 0 };
+}
+
+/** Cambio fazione: se il nome era quello del capo della vecchia fazione, segue la nuova. */
+function withFaction(draft: PlayerDraft, factionId: FactionId): PlayerDraft {
+  const name = draft.name === leaderName(draft.factionId) ? leaderName(factionId) : draft.name;
+  return { ...draft, factionId, name };
+}
+
+/**
+ * Applica una modifica alla scheda `index`. Se la fazione scelta è già di un
+ * altro giocatore, i due se la scambiano: con 4 giocatori tutte le
+ * fazioni sono occupate e lo scambio è l'unico modo di cambiarla.
+ */
+function applyPatch(drafts: readonly PlayerDraft[], index: number, patch: Partial<PlayerDraft>): readonly PlayerDraft[] {
+  const current = drafts[index];
+  if (!current) return drafts;
+  const { factionId, ...rest } = patch;
+  if (!factionId || factionId === current.factionId) {
+    return drafts.map((d, i) => (i === index ? { ...d, ...rest } : d));
+  }
+  // Si cerca anche tra le schede nascoste (meno giocatori): così le quattro
+  // fazioni restano sempre distinte quando si torna a 3 o 4 giocatori.
+  const other = drafts.findIndex((d, i) => i !== index && d.factionId === factionId);
+  return drafts.map((d, i) => {
+    if (i === index) return withFaction({ ...d, ...rest }, factionId);
+    if (i === other) return withFaction(d, current.factionId);
+    return d;
+  });
 }
 
 // ─── Scheda giocatore ─────────────────────────────────────────────────────────
@@ -34,7 +66,8 @@ function makeDefault(index: number, faction: FactionId): PlayerDraft {
 interface PlayerCardProps {
   readonly index: number;
   readonly draft: PlayerDraft;
-  readonly taken: ReadonlySet<FactionId>;
+  /** Fazioni degli altri giocatori → nome di chi le guida (toccarle le scambia). */
+  readonly taken: ReadonlyMap<FactionId, string>;
   readonly onChange: (index: number, patch: Partial<PlayerDraft>) => void;
 }
 
@@ -42,6 +75,9 @@ const PlayerCard = memo(function PlayerCard({ index, draft, taken, onChange }: P
   const faction = FACTION_DEFINITIONS[draft.factionId];
   const lore = FACTION_LORE[draft.factionId];
   const home = ZONE_DEFINITIONS[faction.startingZone];
+  // Sul telefono il movente è chiuso per accorciare la scheda (su desktop resta sempre visibile).
+  const [motiveOpen, setMotiveOpen] = useState(false);
+  const motiveId = useId();
 
   return (
     <li className="pcard" style={cssVars({ '--faction': faction.color, '--faction-bg': faction.bgColor })}>
@@ -68,19 +104,21 @@ const PlayerCard = memo(function PlayerCard({ index, draft, taken, onChange }: P
         {ALL_FACTION_IDS.map(fid => {
           const f = FACTION_DEFINITIONS[fid];
           const selected = draft.factionId === fid;
-          const disabled = taken.has(fid) && !selected;
+          const owner = selected ? undefined : taken.get(fid);
           return (
             <button
               key={fid}
               type="button"
               role="radio"
               aria-checked={selected}
-              disabled={disabled}
-              className={`fchip${selected ? ' is-active' : ''}`}
+              aria-label={owner ? `${f.name}, ora di ${owner}: tocca per scambiare` : f.name}
+              title={owner ? `Scambia con ${owner}` : undefined}
+              className={`fchip${selected ? ' is-active' : ''}${owner ? ' is-taken' : ''}`}
               style={cssVars({ '--chip': f.color })}
               onClick={() => onChange(index, { factionId: fid })}
             >
-              {f.shortName}
+              <FactionEmblem faction={fid} size={22} className="fchip__emblem" />
+              <span className="fchip__name">{f.shortName}</span>
             </button>
           );
         })}
@@ -96,7 +134,16 @@ const PlayerCard = memo(function PlayerCard({ index, draft, taken, onChange }: P
         </div>
         <p className="dossier__leader">{lore.leader} <span>· {lore.leaderRole}</span></p>
         <p className="dossier__motto">«{lore.motto}»</p>
-        <p className="dossier__motive">{lore.motive}</p>
+        <button
+          type="button"
+          className="dossier__more"
+          aria-expanded={motiveOpen}
+          aria-controls={motiveId}
+          onClick={() => setMotiveOpen(o => !o)}
+        >
+          {motiveOpen ? 'Nascondi il movente' : 'Leggi il movente'}
+        </button>
+        <p id={motiveId} className={`dossier__motive${motiveOpen ? ' is-open' : ''}`}>{lore.motive}</p>
         <p className="dossier__ability"><strong>{faction.abilityName}</strong> — {faction.abilityDescription}</p>
       </div>
     </li>
@@ -119,11 +166,14 @@ export function SetupScreen() {
   const [error, setError] = useState<string | null>(null);
 
   const active = drafts.slice(0, playerCount);
-  const taken = new Set(active.map(d => d.factionId));
 
   function setDraft(index: number, patch: Partial<PlayerDraft>) {
     setError(null);
-    setDrafts(prev => prev.map((d, i) => (i === index ? { ...d, ...patch } : d)));
+    setDrafts(prev => applyPatch(prev, index, patch));
+  }
+
+  function takenFor(index: number): ReadonlyMap<FactionId, string> {
+    return new Map(active.flatMap((d, i) => (i === index ? [] : [[d.factionId, d.name.trim() || `Giocatore ${i + 1}`] as const])));
   }
 
   function handleStart() {
@@ -170,15 +220,16 @@ export function SetupScreen() {
 
         <ol className="pcard-list">
           {active.map((draft, i) => (
-            <PlayerCard key={i} index={i} draft={draft} taken={taken} onChange={setDraft} />
+            <PlayerCard key={i} index={i} draft={draft} taken={takenFor(i)} onChange={setDraft} />
           ))}
         </ol>
 
-        {error && <p className="form-error" role="alert">{error}</p>}
-
-        <button type="button" className="btn btn--sodium btn--xl" onClick={handleStart}>
-          Inizia la partita →
-        </button>
+        <div className="lobby__start">
+          {error && <p className="form-error" role="alert">{error}</p>}
+          <button type="button" className="btn btn--sodium btn--xl" onClick={handleStart}>
+            Inizia la partita →
+          </button>
+        </div>
       </section>
     </main>
   );
