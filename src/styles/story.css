@@ -32,7 +32,24 @@
 .prologue__dots { display: flex; gap: 6px; }
 .dot { width: 22px; height: 3px; border-radius: 2px; background: var(--line-strong); transition: background 200ms, width 200ms; }
 .dot.is-active { width: 36px; background: var(--sodium); }
-.prologue__actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.prologue__actions { display: flex; gap: 8px; }
+/* "Indietro" occupa sempre il suo posto; "Continua" ha larghezza fissa per
+   l'etichetta più lunga dell'ultima pagina: nessun salto tra le pagine */
+.prologue__back.is-hidden { visibility: hidden; }
+.prologue__next { min-width: 210px; }
+@media (max-width: 560px) {
+  /* pulsanti in basso, sempre nello stesso punto anche se il testo è lungo */
+  .prologue__nav {
+    position: sticky; bottom: 0; z-index: 2; flex-direction: column; align-items: stretch; gap: 12px;
+    margin: 0 calc(-1 * var(--gutter)); padding: 14px var(--gutter) max(14px, env(safe-area-inset-bottom));
+    background: linear-gradient(180deg, transparent, var(--ink-0) 30%);
+  }
+  .prologue { padding-bottom: 0; overflow: clip; }   /* clip: lo sticky segue lo scroll della pagina */
+  .prologue__nav { width: auto; justify-self: stretch; }
+  .prologue__actions { display: grid; grid-template-columns: auto auto minmax(0, 1fr); }
+  .prologue__next { min-width: 0; }
+  .prologue__actions .btn { min-height: 44px; padding: 0 12px; }
+}
 
 /* ─── Interludio d'atto ───────────────────────────────────────────────────── */
 .interlude {

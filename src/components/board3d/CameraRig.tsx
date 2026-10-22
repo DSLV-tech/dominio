@@ -28,8 +28,9 @@ interface IntroState {
 const FOLLOW_LAMBDA = 3;
 const BASE_MAX_DISTANCE = 65;
 const OFFSET_LENGTH = Math.hypot(...CAMERA_OFFSET);
-/** Variazione relativa dell'aspect oltre la quale si rifà l'inquadratura. */
-const REFRAME_THRESHOLD = 0.25;
+/** Variazione relativa della distanza d'inquadratura oltre la quale si rifà
+ *  l'inquadratura (oltre a ogni cambio di orientamento della camera). */
+const REFRAME_THRESHOLD = 0.08;
 /** Ingombro dei territori (board3d.json: x −12…13.9, z −9.5…9.85) più il
  *  margine per gettoni e targhe delle zone: mezza estensione su x (lato
  *  lungo) e su z. In verticale si inquadrano i quartieri, non il mare. */
@@ -40,8 +41,14 @@ const FIT_MARGIN = 1.04;
  *  così il lato lungo della plancia corre lungo il lato lungo dello schermo
  *  e il porto sta in primo piano in basso. */
 const PORTRAIT_YAW = -Math.PI / 2;
-/** In verticale la camera guarda il centro dei territori. */
+/** Centro dei territori (board3d.json). */
+const CITY_CENTER: readonly [number, number, number] = [0.95, 0, 0.18];
+/** In verticale la camera guarda il centro dei territori, spostato verso nord
+ *  perché le targhe delle zone sporgono su quel lato. */
 const PORTRAIT_TARGET: readonly [number, number, number] = [0.95, 0, -2.4];
+/** Oltre questo aspect (telefono in orizzontale) conta anche l'altezza: la
+ *  città deve entrare in verticale in un pannello basso e largo. */
+const WIDE_ASPECT = 2.2;
 
 interface CameraView {
   /** Moltiplicatore dell'offset camera. */
@@ -70,6 +77,10 @@ function fitDistance(halfAcross: number, halfAlong: number, aspect: number): num
 function cameraView(aspect: number): CameraView {
   if (!Number.isFinite(aspect) || aspect <= 0) return { fit: 1, yaw: 0, target: CAMERA_TARGET };
   const linear = Math.max(1, CAMERA_REF_ASPECT / aspect);
+  if (aspect >= WIDE_ASPECT) {
+    const fit = Math.max(linear, fitDistance(CITY_HALF_X, CITY_HALF_Z, aspect) / OFFSET_LENGTH);
+    return { fit, yaw: 0, target: CITY_CENTER };
+  }
   if (aspect >= 1) return { fit: linear, yaw: 0, target: CAMERA_TARGET };
   // ruotata: in orizzontale sullo schermo va l'asse z, lungo lo sguardo l'asse x
   return { fit: fitDistance(CITY_HALF_Z, CITY_HALF_X, aspect) / OFFSET_LENGTH, yaw: PORTRAIT_YAW, target: PORTRAIT_TARGET };
@@ -101,16 +112,17 @@ export const CameraRig = memo(function CameraRig() {
   const { fit, yaw, target: aim } = useMemo(() => cameraView(aspect), [aspect]);
   // lo zoom massimo non deve impedire l'inquadratura completa
   const maxDistance = Math.max(BASE_MAX_DISTANCE, OFFSET_LENGTH * fit * 1.15);
-  const framedAspect = useRef(0);
+  const framedView = useRef<{ fit: number; yaw: number } | null>(null);
 
   // Inquadratura iniziale; si ripete solo se il pannello cambia forma in modo
   // netto (rotazione del telefono), senza volo d'ingresso.
   useLayoutEffect(() => {
     if (!Number.isFinite(aspect) || aspect <= 0) return;
     const first = !framed.current;
-    if (!first && Math.abs(aspect - framedAspect.current) / framedAspect.current < REFRAME_THRESHOLD) return;
+    const last = framedView.current;
+    if (!first && last && last.yaw === yaw && Math.abs(fit - last.fit) / last.fit < REFRAME_THRESHOLD) return;
     framed.current = true;
-    framedAspect.current = aspect;
+    framedView.current = { fit, yaw };
     const [ox, oy, oz] = CAMERA_OFFSET;
     finalOffset.set(ox * fit, oy * fit, oz * fit).applyAxisAngle(UP, yaw);
     target.set(aim[0], aim[1], aim[2]);

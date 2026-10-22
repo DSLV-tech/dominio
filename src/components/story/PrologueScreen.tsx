@@ -56,8 +56,18 @@ export function PrologueScreen() {
         </div>
         <div className="prologue__actions">
           <button type="button" className="btn btn--ghost" onClick={finishPrologue}>Salta</button>
-          {index > 0 && <button type="button" className="btn btn--ghost" onClick={back}>← Indietro</button>}
-          <button type="button" className="btn btn--sodium" onClick={next} data-shot-next>
+          {/* sempre presente (nascosto in prima pagina): i pulsanti non cambiano posto tra le pagine */}
+          <button
+            type="button"
+            className={`btn btn--ghost prologue__back${index === 0 ? ' is-hidden' : ''}`}
+            onClick={back}
+            disabled={index === 0}
+            aria-hidden={index === 0}
+            tabIndex={index === 0 ? -1 : undefined}
+          >
+            ← Indietro
+          </button>
+          <button type="button" className="btn btn--sodium prologue__next" onClick={next} data-shot-next>
             {isLast ? 'Scegli la tua fazione →' : 'Continua →'}
           </button>
         </div>

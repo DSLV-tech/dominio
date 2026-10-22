@@ -195,13 +195,24 @@ const Legend = memo(function Legend() {
 export function GameMap() {
   const game = useGameStore(s => s.game);
   // Sui telefoni la carta è più grande del pannello e si scorre col dito
-  // (styles/mobile.css): all'apertura parte centrata.
+  // (styles/mobile.css): parte centrata, e si ricentra quando il pannello
+  // cambia forma (rotazione del telefono).
   const scrollerRef = useRef<HTMLDivElement>(null);
   useLayoutEffect(() => {
     const el = scrollerRef.current;
     if (!el) return;
-    el.scrollLeft = Math.max(0, (el.scrollWidth - el.clientWidth) / 2);
-    el.scrollTop = Math.max(0, (el.scrollHeight - el.clientHeight) / 2);
+    const center = () => {
+      el.scrollLeft = Math.max(0, (el.scrollWidth - el.clientWidth) / 2);
+      el.scrollTop = Math.max(0, (el.scrollHeight - el.clientHeight) / 2);
+    };
+    center();
+    let last = `${el.clientWidth}x${el.clientHeight}`;
+    const ro = new ResizeObserver(() => {
+      const size = `${el.clientWidth}x${el.clientHeight}`;
+      if (size !== last) { last = size; center(); }
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
   }, []);
   const { highlightPairs, getVariant, handleClick, handleHover } = useTerritoryInteraction();
 

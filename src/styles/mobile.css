@@ -17,7 +17,9 @@
   }
   .game__main { grid-template-columns: minmax(0, 1fr); min-height: 0; }
   .stage { height: auto; min-height: 0; aspect-ratio: auto; }
-  .b3d-root { min-height: 0; }
+  /* board3d.css arriva dopo (chunk 3D caricato a richiesta): serve più specificità */
+  .stage .b3d-root { min-height: 0; }
+  .stage .b3d-hint { display: none; }
 
   /* Barra superiore compatta */
   .topbar { gap: 8px; }

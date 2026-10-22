@@ -93,8 +93,10 @@
 }
 .tnode__band { fill: var(--faction); transition: fill 250ms; }
 .tnode__name {
-  fill: var(--faction-text); font: 600 10px var(--font-ui); letter-spacing: 0.01em;
-  user-select: none; pointer-events: none; transition: fill 250ms;
+  /* il colore arriva inline da TerritoryNode (Safari iOS); niente
+     transizione sul fill e niente shorthand `font` con var() */
+  fill: var(--faction-text, var(--text)); font-family: var(--font-ui); font-size: 10px; font-weight: 600; letter-spacing: 0.01em;
+  user-select: none; -webkit-user-select: none; pointer-events: none;
 }
 .tnode__star-bg { fill: var(--ink-0); stroke: color-mix(in srgb, var(--sodium) 70%, transparent); stroke-width: 1; }
 .tnode__star { fill: var(--sodium); pointer-events: none; }
@@ -131,6 +133,12 @@
 .map2d__legend-line { fill: none; stroke-width: 2.4; stroke-linecap: round; stroke-dasharray: 4 3; }
 .map2d__legend-line--attack { stroke: var(--phase-attack); }
 .map2d__legend-line--move { stroke: var(--phase-move); }
+
+/* Safari iOS: niente transizioni su fill/stroke degli elementi SVG colorati
+   via variabili (potevano restare col colore iniziale, scuro) */
+@supports (-webkit-touch-callout: none) {
+  .tnode__body, .tnode__rim, .tnode__band, .tnode__coin, .zone__panel { transition: none; }
+}
 
 @media (prefers-reduced-motion: reduce) {
   .croad-hl__line, .tnode--selected .tnode__rim, .tnode--attackable .tnode__rim,

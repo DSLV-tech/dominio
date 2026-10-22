@@ -34,6 +34,16 @@ function splitName(name: string): readonly [string, string | null] {
   return [parts.slice(0, half).join(' '), parts.slice(half).join(' ')];
 }
 
+/** Colore del nome per variante, messo inline sul <text>: su Safari iOS i
+ *  nomi non comparivano (testo scuro sulla targa scura). Così il colore non
+ *  dipende da variabili ereditate né da transizioni sul fill. */
+const VARIANT_TEXT: Readonly<Partial<Record<NodeVariant, string>>> = {
+  selected:   'var(--text-strong)',
+  attackable: '#ffc2bc',
+  moveable:   '#b6f0cf',
+  targetable: '#ffd9a0',
+};
+
 const STAR_PATH = 'M 0 -5.5 L 1.6 -1.8 5.4 -1.6 2.5 0.9 3.4 4.8 0 2.7 -3.4 4.8 -2.5 0.9 -5.4 -1.6 -1.6 -1.8 Z';
 const BAND_X = 7;
 const TEXT_X = NODE_W / 2 + 4;
@@ -64,6 +74,7 @@ export const TerritoryNode = memo(function TerritoryNode({
   });
 
   const ownerLabel = faction ? faction.shortName : 'neutrale';
+  const nameStyle = { fill: VARIANT_TEXT[variant] ?? faction?.textColor ?? 'var(--muted)' };
 
   return (
     <g
@@ -91,11 +102,11 @@ export const TerritoryNode = memo(function TerritoryNode({
         <rect className="tnode__rim" x={0.75} y={0.75} width={NODE_W - 1.5} height={NODE_H - 1.5} rx={9.5} />
         <rect className="tnode__band" x={BAND_X} y={9} width={3} height={NODE_H - 18} rx={1.5} />
 
-        <text className="tnode__name" x={TEXT_X} y={line2 ? NODE_H / 2 - 2.5 : NODE_H / 2 + 3.5} textAnchor="middle">
+        <text className="tnode__name" style={nameStyle} x={TEXT_X} y={line2 ? NODE_H / 2 - 2.5 : NODE_H / 2 + 3.5} textAnchor="middle">
           {line1}
         </text>
         {line2 && (
-          <text className="tnode__name" x={TEXT_X} y={NODE_H / 2 + 9.5} textAnchor="middle">{line2}</text>
+          <text className="tnode__name" style={nameStyle} x={TEXT_X} y={NODE_H / 2 + 9.5} textAnchor="middle">{line2}</text>
         )}
 
         {isBottleneck && (
