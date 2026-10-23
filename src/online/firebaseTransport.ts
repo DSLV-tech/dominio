@@ -73,6 +73,9 @@ function toRoomError(error: unknown): Error {
   if (code === 'unavailable' || code.includes('network')) {
     return new RoomError('unavailable', 'Connessione assente: riprova quando sei online.');
   }
+  if (code === 'auth/configuration-not-found' || code === 'auth/operation-not-allowed' || code === 'auth/admin-restricted-operation') {
+    return new RoomError('unavailable', 'Il gioco online non è ancora attivo: nella console Firebase va attivato l\'accesso «Anonimo» (Authentication → Metodo di accesso).');
+  }
   if (code === 'permission-denied') {
     return new RoomError('unavailable', 'La stanza non accetta questa operazione.');
   }
