@@ -15,6 +15,7 @@
 #
 # Per gli aggiornamenti successivi basta ./scripts/deploy.sh
 set -euo pipefail
+trap 'c=$?; echo; echo "Lo script si è fermato alla riga $LINENO (codice $c). Incolla queste righe a Claude."' ERR
 cd "$(dirname "$0")/.."
 
 FB=(npx --yes firebase-tools@14)
@@ -35,7 +36,8 @@ if [ $# -ge 1 ]; then
   PROJECT_ID="$1"
   bold "2/6  Uso il progetto esistente: $PROJECT_ID"
 else
-  SUFFIX=$(LC_ALL=C tr -dc 'a-z0-9' </dev/urandom | head -c 6)
+  # (niente `tr </dev/urandom | head`: con pipefail su macOS chiude lo script in silenzio)
+  SUFFIX=$(node -e "console.log(require('crypto').randomBytes(3).toString('hex'))")
   PROJECT_ID="dominio-$SUFFIX"
   bold "2/6  Creo il progetto $PROJECT_ID"
   if ! "${FB[@]}" projects:create "$PROJECT_ID" --display-name "Dominio"; then
