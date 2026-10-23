@@ -1,0 +1,14 @@
+# Graphify: solo il codice del gioco (src, scripts, configurazione).
+# Asset, modelli Blender, documenti e build gonfierebbero il grafo senza aiutare.
+blender/
+docs/
+public/
+dist/
+graphify-out/
+node_modules/
+.firebase/
+*.glb
+*.png
+*.jpg
+.env*
+src/data/traffic.json

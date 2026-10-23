@@ -25,3 +25,7 @@ dist-ssr
 
 # Firebase (cache di pubblicazione)
 .firebase/
+
+# Graphify: cache locale (il grafo in graphify-out/ invece va su git)
+graphify-out/cache/
+graphify-out/.graphify_*
