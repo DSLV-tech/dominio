@@ -1,0 +1,76 @@
+/* ─── Partita online: sala d'attesa, invito, avvisi di turno ───────────────── */
+
+.room {
+  min-height: 100dvh; display: grid; align-content: start; justify-items: center; gap: 20px;
+  padding: max(24px, env(safe-area-inset-top)) max(var(--gutter), env(safe-area-inset-right)) max(24px, env(safe-area-inset-bottom)) max(var(--gutter), env(safe-area-inset-left));
+}
+.room > * { width: min(520px, 100%); }
+.room--center { align-content: center; text-align: center; }
+.room--join { align-content: center; text-align: center; }
+
+.room__head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.room__title { margin: 0; font: 600 clamp(24px, 6vw, 32px)/1.15 var(--font-display); letter-spacing: 0.03em; color: var(--text-strong); }
+.room__hint { margin: 0; font-size: 13.5px; color: var(--muted); }
+.room__status { display: inline-flex; align-items: center; justify-content: center; gap: 10px; margin: 0; font-size: 14px; color: var(--text); }
+
+/* Codice: grande, spaziato, leggibile da dettare */
+.room__invite {
+  display: grid; gap: 10px; padding: 16px; text-align: center;
+  background: var(--surface-1); border: 1px solid var(--line); border-radius: var(--radius-l);
+  box-shadow: var(--bevel), var(--shadow-s);
+}
+.room__code {
+  margin: 0; font: 700 clamp(36px, 11vw, 52px)/1 var(--font-mono); letter-spacing: 0.24em; padding-left: 0.24em;
+  color: var(--sodium); text-shadow: 0 0 22px var(--sodium-dim);
+}
+.room__code--inline { font-size: inherit; letter-spacing: 0.12em; padding-left: 0; text-shadow: none; }
+
+.share { display: grid; gap: 8px; }
+.share__link { width: 100%; font: 500 13px/1 var(--font-mono); color: var(--muted); text-align: center; }
+.share__actions { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 8px; }
+.share__actions .btn { min-height: 44px; }
+
+/* Posti al tavolo */
+.room__table { display: grid; gap: 8px; }
+.seats { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.seat {
+  display: flex; align-items: center; gap: 10px; padding: 8px 10px;
+  background: var(--ink-1); border: 1px solid var(--line); border-left: 3px solid var(--faction);
+  border-radius: var(--radius-m);
+}
+.seat.is-open { border-style: dashed; border-left-style: solid; background: transparent; }
+.seat__text { display: grid; gap: 2px; min-width: 0; flex: 1; }
+.seat__name { font-weight: 600; color: var(--text-strong); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.seat.is-open .seat__name { color: var(--muted); font-weight: 500; }
+.seat__faction { font-size: 12px; color: var(--faction); }
+.seat__status {
+  flex: none; padding: 3px 8px; border-radius: 999px;
+  font: 600 10.5px/1.4 var(--font-mono); letter-spacing: 0.06em; text-transform: uppercase;
+  background: var(--ink-3); color: var(--muted);
+}
+.seat__status--me { background: var(--sodium-dim); color: var(--sodium); }
+.seat__status--ok { background: color-mix(in srgb, var(--ok) 16%, transparent); color: var(--ok); }
+.seat__status--wait { animation: seat-wait 1.4s ease-in-out infinite; }
+@keyframes seat-wait { 50% { opacity: 0.45; } }
+
+.room__actions { display: grid; gap: 12px; justify-items: center; }
+
+/* Ingresso dall'invito */
+.join { display: grid; gap: 10px; text-align: left; }
+.join__name { width: 100%; height: 48px; font-size: 17px; }
+
+/* Lobby: avvio offline + online */
+.lobby__start-row { display: flex; gap: 8px; width: 100%; justify-content: center; }
+.lobby__start-row .btn--xl { flex: 1 1 auto; min-width: 0; }
+.lobby__start-row .lobby__online { flex: 0 0 auto; width: auto; padding: 0 18px; letter-spacing: 0.08em; }
+@media (max-height: 520px) and (max-width: 1024px) {
+  .lobby__start-row .btn--xl { letter-spacing: 0.06em; font-size: 14px; }
+  .lobby__start-row .lobby__online { padding: 0 12px; }
+}
+
+/* Scontro guardato da un altro dispositivo */
+.combat__wait { align-self: center; font-size: 13.5px; color: var(--muted); }
+
+@media (prefers-reduced-motion: reduce) {
+  .seat__status--wait { animation: none; }
+}

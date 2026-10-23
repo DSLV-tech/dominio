@@ -18,6 +18,7 @@ import { CPU_DELAY_FACTOR, useSettingsStore } from '../store/settingsStore';
 import type { GameState, TerritoryId } from '../types';
 import { AI_MAX_ATTACKS_PER_TURN, aiChooseAttack, aiChooseEvent, aiChooseMovement, planAITurn, summarizeTurn } from '../engine';
 import { AI_COMBAT_SPEED, AI_RESULT_HOLD_MS, combatDurationMs } from '../data/combatTimeline';
+import { useRunsAI } from '../online/useControl';
 
 const DELAY_REINFORCE = 400;  // ms fra un'azione di rinforzo e l'altra
 const DELAY_EVENT     = 900;  // ms prima/dopo una carta evento giocata dalla CPU
@@ -52,13 +53,15 @@ export function useAIPlayer() {
   const currentIndex  = useGameStore(s => s.game?.currentPlayerIndex);
   // La CPU aspetta che l'interludio narrativo venga chiuso
   const storyPaused   = useStoryStore(s => s.interlude !== null);
+  // online le CPU girano solo sul dispositivo di chi ha creato la stanza
+  const aiHere        = useRunsAI();
   const runningRef    = useRef(false);
 
   useEffect(() => {
     const store = useGameStore.getState();
     const ui = useUIStore.getState();
     const game = store.game;
-    if (!game || game.phase === 'GAME_OVER' || storyPaused) return;
+    if (!game || game.phase === 'GAME_OVER' || storyPaused || !aiHere) return;
 
     const me = game.players[game.currentPlayerIndex];
     if (!me?.isAI || runningRef.current) return;
@@ -194,5 +197,5 @@ export function useAIPlayer() {
     }
 
     return () => { cancelled = true; timers.forEach(clearTimeout); done(); };
-  }, [phase, currentIndex, storyPaused]);
+  }, [phase, currentIndex, storyPaused, aiHere]);
 }

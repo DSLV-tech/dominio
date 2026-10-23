@@ -7,6 +7,7 @@ import { memo, useEffect } from 'react';
 import { useStoryStore } from '../../store/storyStore';
 import { useGameStore } from '../../store/gameStore';
 import { FACTION_DEFINITIONS } from '../../data';
+import { useLocalTurn } from '../../online/useControl';
 
 const AUTO_CLOSE_MS = 7000;
 
@@ -15,7 +16,9 @@ export const ActInterlude = memo(function ActInterlude() {
   const close = useStoryStore(s => s.closeInterlude);
   const current = useGameStore(s => (s.game ? s.game.players[s.game.currentPlayerIndex] ?? null : null));
 
-  const cpuTurn = !!current?.isAI;
+  // turno di una CPU o, online, di un altro dispositivo: si chiude da solo
+  const localTurn = useLocalTurn();
+  const cpuTurn = !!current && !localTurn;
 
   useEffect(() => {
     if (!act) return;

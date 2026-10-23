@@ -19,6 +19,8 @@ import { cssVars } from '../common/cssVars';
 import { FactionEmblem } from '../common/FactionEmblem';
 import { useIsNarrow } from '../../hooks/useIsNarrow';
 import { InstallHint } from './InstallHint';
+import { useOnlineStore, type RoomDraft } from '../../online/onlineStore';
+import { DEFAULT_ONLINE_NAME, loadPlayerName, savePlayerName } from '../../online/playerName';
 
 // ─── Tipi ─────────────────────────────────────────────────────────────────────
 
@@ -294,6 +296,11 @@ export function SetupScreen() {
   const [movementRule, setMovementRule] = useState<MovementRule>('adjacent');
   const [currentIndex, setCurrentIndex] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const onlineAvailable = useOnlineStore(s => s.available);
+  const onlineBusy = useOnlineStore(s => s.phase === 'busy');
+  const onlineError = useOnlineStore(s => s.error);
+  const createRoom = useOnlineStore(s => s.createRoom);
+  const clearOnlineError = useOnlineStore(s => s.clearError);
 
   const active = drafts.slice(0, playerCount);
   // Se si scende di giocatori, la riga selezionata potrebbe sparire.
@@ -302,6 +309,7 @@ export function SetupScreen() {
 
   function setDraft(index: number, patch: Partial<PlayerDraft>) {
     setError(null);
+    clearOnlineError();
     setDrafts(prev => applyPatch(prev, index, patch));
   }
 
@@ -322,12 +330,51 @@ export function SetupScreen() {
     startGame(config);
   }
 
+  /**
+   * Online: il posto 1 è di chi crea la stanza, gli altri umani diventano posti
+   * per gli amici, le CPU restano CPU. Senza altri umani il secondo giocatore
+   * diventa l'amico (il caso più comune: tu contro un amico).
+   */
+  function handleOnline() {
+    const hasFriend = active.some((p, i) => i > 0 && !p.isAI);
+    const typed = active[0] ? displayName(active[0], 0) : '';
+    // "Tu" va bene sul proprio schermo, non su quello dell'amico
+    const hostName = typed === 'Tu' ? loadPlayerName() || DEFAULT_ONLINE_NAME : typed;
+    if (typed !== 'Tu') savePlayerName(typed);
+    const draft: RoomDraft = {
+      movementRule,
+      seats: active.map((p, i) => {
+        const friend = i > 0 && (!p.isAI || (!hasFriend && i === 1));
+        return {
+          kind: i === 0 ? 'host' : friend ? 'friend' : 'cpu',
+          name: i === 0 ? hostName : friend ? 'Amico' : displayName(p, i),
+          factionId: p.factionId,
+        };
+      }),
+    };
+    void createRoom(draft);
+  }
+
+  const shownError = error ?? onlineError;
   const startBlock = (
     <div className="lobby__start">
-      {error && <p className="form-error" role="alert">{error}</p>}
-      <button type="button" className="btn btn--sodium btn--xl" onClick={handleStart}>
-        Inizia la partita →
-      </button>
+      {shownError && <p className="form-error" role="alert">{shownError}</p>}
+      <div className="lobby__start-row">
+        {onlineAvailable && (
+          <button
+            type="button"
+            className="btn btn--ghost btn--xl lobby__online"
+            onClick={handleOnline}
+            disabled={onlineBusy}
+            title="Crea una stanza e manda il link a un amico: i giocatori su Umano diventano posti per gli amici"
+          >
+            {onlineBusy ? '…' : 'Online'}
+          </button>
+        )}
+        <button type="button" className="btn btn--sodium btn--xl" onClick={handleStart}>
+          Inizia la partita →
+        </button>
+      </div>
     </div>
   );
 

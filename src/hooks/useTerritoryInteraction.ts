@@ -5,6 +5,7 @@
 // e uiStore, quindi le due mappe restano sempre sincronizzate.
 
 import { useCallback, useMemo } from 'react';
+import { useLocalTurn } from '../online/useControl';
 import { useGameStore } from '../store/gameStore';
 import { useUIStore } from '../store/uiStore';
 import { TERRITORY_DEFINITIONS } from '../data';
@@ -49,7 +50,9 @@ export function useTerritoryInteraction(): TerritoryInteraction {
 
   const currentPlayer   = game ? game.players[game.currentPlayerIndex] ?? null : null;
   const currentPlayerId = currentPlayer?.id ?? null;
-  const isHumanTurn     = !!currentPlayer && !currentPlayer.isAI && game?.phase !== 'GAME_OVER';
+  // online i comandi valgono solo per chi gioca da questo dispositivo
+  const localTurn       = useLocalTurn();
+  const isHumanTurn     = localTurn && game?.phase !== 'GAME_OVER';
   const phase           = game?.phase ?? null;
   const territories     = game?.territories ?? null;
   const movementRule    = game?.movementRule ?? null;

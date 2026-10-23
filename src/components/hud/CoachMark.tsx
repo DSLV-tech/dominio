@@ -9,6 +9,7 @@ import { useUIStore } from '../../store/uiStore';
 import { useStoryStore } from '../../store/storyStore';
 import { useTutorialStore } from '../../store/tutorialStore';
 import { COACH_STEPS } from '../../data/coach';
+import { useLocalTurn } from '../../online/useControl';
 
 export const CoachMark = memo(function CoachMark() {
   const game         = useGameStore(s => s.game);
@@ -19,9 +20,10 @@ export const CoachMark = memo(function CoachMark() {
   const seen         = useTutorialStore(s => s.seen);
   const markSeen     = useTutorialStore(s => s.markSeen);
   const skipAll      = useTutorialStore(s => s.skipAll);
+  const localTurn    = useLocalTurn();
 
   const me = game ? game.players[game.currentPlayerIndex] ?? null : null;
-  if (!game || !me || me.isAI || !enabled || busy || interlude || game.pendingAttack || game.pendingOccupation) return null;
+  if (!game || !me || !localTurn || !enabled || busy || interlude || game.pendingAttack || game.pendingOccupation) return null;
   if (game.phase === 'GAME_OVER') return null;
 
   const ctx = { game, attackFromId, handSize: (game.hands[me.id] ?? []).length, seen };

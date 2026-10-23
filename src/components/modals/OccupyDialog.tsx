@@ -7,11 +7,14 @@ import type { PendingOccupation } from '../../types';
 import { useGameStore } from '../../store/gameStore';
 import { TERRITORY_DEFINITIONS } from '../../data';
 import { TroopStepper } from '../common/TroopStepper';
+import { useLocalTurn } from '../../online/useControl';
 
 export const OccupyDialog = memo(function OccupyDialog() {
   const occupation = useGameStore(s => s.game?.pendingOccupation ?? null);
   const combatOpen = useGameStore(s => s.game?.pendingAttack != null);
-  if (!occupation || combatOpen) return null;
+  // online la sceglie solo chi ha conquistato
+  const localTurn  = useLocalTurn();
+  if (!occupation || combatOpen || !localTurn) return null;
   return <OccupyBody key={`${occupation.fromId}>${occupation.toId}`} occupation={occupation} />;
 });
 

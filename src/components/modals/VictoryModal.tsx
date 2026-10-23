@@ -8,6 +8,7 @@ import { useStoryStore } from '../../store/storyStore';
 import { FACTION_DEFINITIONS, FACTION_LORE, EPILOGUES, NEWSPAPER, CHRONICLER } from '../../data';
 import type { VictoryCondition } from '../../types';
 import { cssVars } from '../common/cssVars';
+import { useOnlineStore } from '../../online/onlineStore';
 
 const CONDITION_LABELS: Readonly<Record<VictoryCondition, string>> = {
   TOTAL_DOMINATION: 'Dominio totale',
@@ -18,6 +19,8 @@ const CONDITION_LABELS: Readonly<Record<VictoryCondition, string>> = {
 export const VictoryModal = memo(function VictoryModal() {
   const game      = useGameStore(s => s.game);
   const resetGame = useGameStore(s => s.resetGame);
+  const online    = useOnlineStore(s => s.room !== null);
+  const leaveRoom = useOnlineStore(s => s.leave);
   const dispatches = useStoryStore(s => s.dispatches);
 
   if (game?.phase !== 'GAME_OVER' || !game.winner) return null;
@@ -49,8 +52,8 @@ export const VictoryModal = memo(function VictoryModal() {
           <span>di {CHRONICLER}</span>
           <span>{survivors} {survivors === 1 ? 'fazione rimasta' : 'fazioni rimaste'} · {dispatches.length} articoli in archivio</span>
         </footer>
-        <button type="button" className="btn btn--ink btn--xl" onClick={resetGame} autoFocus>
-          Nuova partita
+        <button type="button" className="btn btn--ink btn--xl" onClick={online ? leaveRoom : resetGame} autoFocus>
+          {online ? 'Esci dalla stanza' : 'Nuova partita'}
         </button>
       </article>
     </div>

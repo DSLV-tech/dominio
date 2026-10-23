@@ -11,11 +11,13 @@
     "simulate": "tsx scripts/simulate.ts",
     "story": "tsx scripts/story-check.ts",
     "traffic": "tsx scripts/traffic.ts",
-    "combat": "tsx scripts/combat-check.ts"
+    "combat": "tsx scripts/combat-check.ts",
+    "deploy": "./scripts/deploy.sh"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.9",
     "@react-three/fiber": "^9.8.2",
+    "firebase": "^13.1.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "three": "^0.180.0",

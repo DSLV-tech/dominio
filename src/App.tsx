@@ -1,5 +1,6 @@
 // ─── App ──────────────────────────────────────────────────────────────────────
 // Instradamento: Prologo → Lobby → Partita (→ Epilogo nel VictoryModal).
+// Online: invito (JoinScreen) → sala d'attesa (RoomScreen) → Partita.
 // Layout partita: barra superiore, barra del turno, mappa a tutto spazio,
 // sidebar a schede. Su desktop occupa esattamente il viewport (niente scroll
 // di pagina); sotto i 1024px le sezioni si impilano.
@@ -9,6 +10,9 @@ import { useGameStore } from './store/gameStore';
 import { useUIStore } from './store/uiStore';
 import { useStoryStore } from './store/storyStore';
 import { SetupScreen } from './components/setup/SetupScreen';
+import { RoomScreen } from './components/online/RoomScreen';
+import { JoinScreen } from './components/online/JoinScreen';
+import { useOnlineStore } from './online/onlineStore';
 import { GameMap } from './components/map/GameMap';
 import { PhaseBar } from './components/hud/PhaseBar';
 import { Sidebar } from './components/hud/Sidebar';
@@ -37,6 +41,7 @@ import './styles/story.css';
 import './styles/combat.css';
 import './styles/attack.css';
 import './styles/map2d.css';
+import './styles/online.css';
 import './styles/mobile.css';
 
 // three.js (~700 KB) viene scaricato solo quando serve la vista 3D
@@ -83,12 +88,15 @@ function GameScreen() {
   const setMapMode   = useUIStore(s => s.setMapMode);
   const resetGame    = useGameStore(s => s.resetGame);
   const round        = useGameStore(s => s.game?.round ?? 1);
+  const online       = useOnlineStore(s => s.room !== null);
+  const roomCode     = useOnlineStore(s => s.room?.code ?? '');
+  const leaveRoom    = useOnlineStore(s => s.leave);
   const narrow       = useIsNarrow();
   // "Lobby" non azzera più al primo click: chiede conferma
   const [confirmLeave, setConfirmLeave] = useState(false);
   const askLeave   = useCallback(() => setConfirmLeave(true), []);
   const cancelLeave = useCallback(() => setConfirmLeave(false), []);
-  const leave      = useCallback(() => { setConfirmLeave(false); resetGame(); }, [resetGame]);
+  const leave      = useCallback(() => { setConfirmLeave(false); if (online) leaveRoom(); else resetGame(); }, [online, leaveRoom, resetGame]);
 
   return (
     <div className="game">
@@ -100,8 +108,8 @@ function GameScreen() {
         <div className="topbar__actions">
           <AudioControls />
           <SegmentedControl options={narrow ? MAP_MODES_SHORT : MAP_MODES} value={mapMode} onChange={setMapMode} ariaLabel="Vista mappa" size="sm" />
-          <button type="button" className="btn btn--ghost btn--sm" onClick={askLeave} title="Abbandona e torna alla lobby" aria-haspopup="dialog">
-            Lobby
+          <button type="button" className="btn btn--ghost btn--sm" onClick={askLeave} title={online ? 'Esci dalla partita online' : 'Abbandona e torna alla lobby'} aria-haspopup="dialog">
+            {online ? 'Esci' : 'Lobby'}
           </button>
         </div>
       </header>
@@ -139,11 +147,15 @@ function GameScreen() {
       <ActInterlude />
       <VictoryModal />
 
-      {confirmLeave && (
+      {confirmLeave && (online ? (
+        <ConfirmDialog title="Uscire dalla partita online?" confirmLabel="Esci" cancelLabel="Continua a giocare" onConfirm={leave} onCancel={cancelLeave}>
+          <p>La partita resta nella stanza {roomCode}: per rientrare riapri il link d'invito. Finché sei fuori il tuo turno resta in attesa.</p>
+        </ConfirmDialog>
+      ) : (
         <ConfirmDialog title="Abbandonare la partita?" confirmLabel="Abbandona" cancelLabel="Continua a giocare" onConfirm={leave} onCancel={cancelLeave}>
           <p>Torni alla lobby e la partita in corso (notte {round}) va persa. Non si può annullare.</p>
         </ConfirmDialog>
-      )}
+      ))}
     </div>
   );
 }
@@ -151,6 +163,8 @@ function GameScreen() {
 export default function App() {
   const hasGame      = useGameStore(s => s.game !== null);
   const prologueDone = useStoryStore(s => s.prologueDone);
+  const inRoom       = useOnlineStore(s => s.room !== null || s.resuming);
+  const invited      = useOnlineStore(s => s.inviteCode !== null);
 
   // Il costo del chunk 3D si paga mentre si legge il prologo o si prepara la lobby
   useEffect(() => {
@@ -165,7 +179,10 @@ export default function App() {
 
   return (
     <ErrorBoundary fallback={(error, reset) => <AppCrash error={error} reset={reset} />}>
-      {hasGame ? <GameScreen /> : prologueDone ? <SetupScreen /> : <PrologueScreen />}
+      {hasGame ? <GameScreen />
+        : inRoom ? <RoomScreen />
+        : invited ? <JoinScreen />
+        : prologueDone ? <SetupScreen /> : <PrologueScreen />}
     </ErrorBoundary>
   );
 }

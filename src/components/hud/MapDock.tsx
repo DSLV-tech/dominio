@@ -10,8 +10,9 @@
 
 import { memo } from 'react';
 import { useGameStore } from '../../store/gameStore';
-import { FACTION_LORE } from '../../data';
 import { AttackPanel } from './AttackPanel';
+import { useLocalTurn } from '../../online/useControl';
+import { waitingLabel } from '../../online/control';
 import { TurnRecap } from './TurnRecap';
 import { CoachMark } from './CoachMark';
 import { phaseHint } from './phaseMeta';
@@ -21,8 +22,9 @@ import { TerritoryInfoCard } from '../story/TerritoryInfoCard';
 const PhaseHint = memo(function PhaseHint() {
   const phase   = useGameStore(s => s.game?.phase);
   const current = useGameStore(s => (s.game ? s.game.players[s.game.currentPlayerIndex] ?? null : null));
+  const localTurn = useLocalTurn();
   if (!phase || !current) return null;
-  const text = current.isAI ? `${FACTION_LORE[current.factionId].leader} sta muovendo…` : phaseHint(phase);
+  const text = localTurn ? phaseHint(phase) : `${waitingLabel(current)}…`;
   if (!text) return null;
   return <p className="dock__hint" role="status">{text}</p>;
 });

@@ -14,6 +14,7 @@ import { TERRITORY_DEFINITIONS } from '../../data';
 import { SegmentedControl, type SegmentOption } from '../common/SegmentedControl';
 import { TroopStepper } from '../common/TroopStepper';
 import type { AttackMode, AttackPreferences } from '../../types';
+import { useLocalTurn } from '../../online/useControl';
 
 type DiceChoice = AttackPreferences['dice'];
 
@@ -42,6 +43,7 @@ export const AttackPanel = memo(function AttackPanel({ compact = false }: Attack
   const [moreOpen, setMoreOpen] = useState(false);
 
   const me = game ? game.players[game.currentPlayerIndex] ?? null : null;
+  const localTurn = useLocalTurn();
   const troops = fromId && game ? game.territories[fromId].troops : 0;
 
   // Il massimo dipende anche dal bersaglio (dado extra dei Colletti Bianchi)
@@ -64,7 +66,7 @@ export const AttackPanel = memo(function AttackPanel({ compact = false }: Attack
     ? game.activeEffects.filter(e => e.type === 'RAPPRESAGLIA_TARGET' && e.playerId === me.id)
     : [];
 
-  if (!game || !me || me.isAI || game.phase !== 'ATTACK' || !fromId) return null;
+  if (!game || !me || !localTurn || game.phase !== 'ATTACK' || !fromId) return null;
   if (game.pendingAttack || game.pendingOccupation || maxDice < 1) return null;
 
   const from = TERRITORY_DEFINITIONS[fromId].name;

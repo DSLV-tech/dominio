@@ -21,6 +21,7 @@ import { hasWebGL } from '../common/webgl';
 import { CombatDice2D } from '../combat/CombatDice2D';
 import { buildCombatView } from '../combat/combatView';
 import type { CombatSideView, CombatStage, GameState, PendingAttack } from '../../types';
+import { useDrivesCurrent } from '../../online/useControl';
 
 const CombatArena3D = lazy(() => import('../combat/CombatArena3D'));
 
@@ -104,7 +105,11 @@ function CombatSequence({ game, attack, onContinue }: CombatSequenceProps) {
   const [skipToken, setSkipToken] = useState(0);
   const [use3D, setUse3D] = useState(() => hasWebGL());
   const setCombatStage = useUIStore(s => s.setCombatStage);
-  const isAI = game.players[game.currentPlayerIndex]?.isAI ?? false;
+  const current = game.players[game.currentPlayerIndex];
+  const isAI = current?.isAI ?? false;
+  // online: lo scontro di un altro dispositivo si guarda, lo chiude chi attacca
+  const drives = useDrivesCurrent();
+  const remoteName = !drives && current && !current.isAI ? current.name : null;
   const seed = useMemo(() => seedOf(attack), [attack]);
 
   const onStage = useCallback((st: CombatStage) => {
@@ -120,11 +125,11 @@ function CombatSequence({ game, attack, onContinue }: CombatSequenceProps) {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && !done) skip();
-      if ((e.key === 'Enter' || e.key === ' ') && done) { e.preventDefault(); onContinue(); }
+      if ((e.key === 'Enter' || e.key === ' ') && done && drives) { e.preventDefault(); onContinue(); }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [done, skip, onContinue]);
+  }, [done, drives, skip, onContinue]);
 
   const fromName = TERRITORY_DEFINITIONS[attack.fromId].name;
   const toName = TERRITORY_DEFINITIONS[attack.toId].name;
@@ -157,7 +162,7 @@ function CombatSequence({ game, attack, onContinue }: CombatSequenceProps) {
               <DiceTally side={view.defender} visible={showTally} />
             </div>
           )}
-          {isAI && <span className="combat__cpu">Turno CPU</span>}
+          {(isAI || remoteName) && <span className="combat__cpu">{remoteName ? `Turno di ${remoteName}` : 'Turno CPU'}</span>}
         </div>
 
         {attack.mode === 'blitz' && attack.rounds.length > 1 && (
@@ -186,9 +191,13 @@ function CombatSequence({ game, attack, onContinue }: CombatSequenceProps) {
               Salta <kbd>Esc</kbd>
             </button>
           )}
-          <button type="button" className="btn btn--sodium" onClick={onContinue} disabled={!done} autoFocus={done}>
-            Continua
-          </button>
+          {drives ? (
+            <button type="button" className="btn btn--sodium" onClick={onContinue} disabled={!done} autoFocus={done}>
+              Continua
+            </button>
+          ) : (
+            done && <span className="combat__wait" role="status">Aspetta {current?.name ?? 'l\'avversario'}…</span>
+          )}
         </div>
       </div>
     </div>

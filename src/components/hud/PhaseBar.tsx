@@ -12,6 +12,8 @@ import { PHASES, PHASE_INDEX } from './phaseMeta';
 import { cssVars } from '../common/cssVars';
 import { FactionEmblem } from '../common/FactionEmblem';
 import { TroopStepper } from '../common/TroopStepper';
+import { useLocalTurn } from '../../online/useControl';
+import { waitingLabel } from '../../online/control';
 
 // ─── Sotto-componenti ─────────────────────────────────────────────────────────
 
@@ -56,6 +58,7 @@ export const PhaseBar = memo(function PhaseBar() {
   const phase               = useGameStore(s => s.game?.phase);
   const round               = useGameStore(s => s.game?.round ?? 1);
   const current             = useGameStore(s => (s.game ? s.game.players[s.game.currentPlayerIndex] ?? null : null));
+  const localTurn           = useLocalTurn();
   const confirmReinforcements = useGameStore(s => s.confirmReinforcements);
   const endAttackPhase      = useGameStore(s => s.endAttackPhase);
   const endMovementPhase    = useGameStore(s => s.endMovementPhase);
@@ -69,7 +72,8 @@ export const PhaseBar = memo(function PhaseBar() {
   if (!phase || !current) return null;
 
   const meta = PHASES[PHASE_INDEX[phase]]?.[1];
-  const human = !current.isAI;
+  // comandi solo a chi gioca da questo dispositivo (online: non durante il turno dell'amico)
+  const human = localTurn;
 
   function handleNextPhase() {
     if (phase === 'REINFORCEMENT') confirmReinforcements();
@@ -87,7 +91,7 @@ export const PhaseBar = memo(function PhaseBar() {
       <div className="turnbar__controls">
         {!human ? (
           <span className="cpu-thinking" role="status">
-            {FACTION_LORE[current.factionId].leader} sta muovendo
+            {waitingLabel(current)}
             <span className="cpu-thinking__dots" aria-hidden="true"><i /><i /><i /></span>
           </span>
         ) : (

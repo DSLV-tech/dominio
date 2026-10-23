@@ -1,5 +1,5 @@
 // ─── CardHandPanel ────────────────────────────────────────────────────────────
-// Mano del giocatore di turno: carte territorio (selezione per incassare un
+// Mano del giocatore (offline quella di chi è di turno, online la propria): carte territorio (selezione per incassare un
 // set nella fase Rinforzi) e carte evento (dispacci giocabili).
 //
 // Stato: la selezione è locale (useState) perché effimera e visibile solo qui;
@@ -17,6 +17,7 @@ import { EventCardView } from './EventCardView';
 import { SetBonusBar } from './SetBonusBar';
 import { evaluateSet } from './cardMeta';
 import { getEventTargets } from '../../engine';
+import { useLocalTurn, useViewerId } from '../../online/useControl';
 import '../../styles/cards.css';
 
 const EMPTY_HAND: readonly Card[] = [];
@@ -32,12 +33,11 @@ function HandEmpty() {
 }
 
 const CardHand = memo(function CardHand() {
-  const player        = useGameStore(s => (s.game ? s.game.players[s.game.currentPlayerIndex] ?? null : null));
-  const hand          = useGameStore(s => {
-    const g = s.game;
-    const id = g?.players[g.currentPlayerIndex]?.id;
-    return g && id ? g.hands[id] ?? EMPTY_HAND : EMPTY_HAND;
-  });
+  // online si vede sempre la propria mano; si gioca solo nel proprio turno
+  const viewer        = useViewerId();
+  const localTurn     = useLocalTurn();
+  const player        = useGameStore(s => s.game?.players.find(p => p.id === viewer) ?? null);
+  const hand          = useGameStore(s => (s.game && viewer ? s.game.hands[viewer] ?? EMPTY_HAND : EMPTY_HAND));
   const phase         = useGameStore(s => s.game?.phase ?? null);
   const setsCashed    = useGameStore(s => s.game?.setsCashedCount ?? 0);
   const cashCardSet   = useGameStore(s => s.cashCardSet);
@@ -51,7 +51,7 @@ const CardHand = memo(function CardHand() {
 
   const territoryCards = useMemo(() => hand.filter(isTerritoryCard), [hand]);
   const eventCards     = useMemo(() => hand.filter(isEventCard), [hand]);
-  const canCashSet     = phase === 'REINFORCEMENT';
+  const canCashSet     = phase === 'REINFORCEMENT' && localTurn;
 
   // La selezione considera solo carte ancora in mano (es. dopo un furto)
   const selectedCards = useMemo(
@@ -142,7 +142,7 @@ const CardHand = memo(function CardHand() {
                   card={card}
                   index={territoryCards.length + i}
                   onPlay={handlePlayEvent}
-                  disabledReason={player.isAI || !game ? 'Non è il tuo turno.' : getEventTargets(game, card.eventId, player.id, card.id).unplayableReason}
+                  disabledReason={player.isAI || !localTurn || !game ? 'Non è il tuo turno.' : getEventTargets(game, card.eventId, player.id, card.id).unplayableReason}
                 />
               </li>
             ))}

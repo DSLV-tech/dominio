@@ -40,6 +40,14 @@ Preferenze in `uiStore.attackPrefs` (localStorage `dominio.attack`), pannello `h
 - PWA: `public/manifest.webmanifest`, icone in `public/icons/` (sorgente `public/favicon.svg`), service worker `public/sw.js` (cambiare `VERSION` per svuotare le cache), registrazione e prompt d'installazione in `src/pwa/install.ts`, invito in lobby `setup/InstallHint`. Il service worker è attivo solo nella build (`npm run build && npm run preview`).
 - Guida del primo turno: `store/tutorialStore`, `data/coach.ts`, `hud/CoachMark`.
 
+## Online (`src/online/`)
+Partita con amici via link. Una stanza = un documento (`rooms/{CODICE}` su Firestore) con posti (`seats`: host/friend/cpu, posto i = `game.players[i]`), `members` e lo stato completo in JSON (`state`, `version`).
+- Sincronizzazione in `onlineStore.ts`: **scrive chi ha il turno**. Il dispositivo che fa agire il giocatore di turno (l'umano seduto lì; per le CPU chi ha creato la stanza) esegue il motore e i dadi e scrive `{game, reinforcementBudget}` con versione crescente (modifiche raggruppate ogni 400 ms); gli altri applicano ogni versione nuova al gameStore e guardano. Il motore non deve diventare deterministico.
+- Chi agisce: `control.ts` (funzioni pure) + `useControl.ts` (hook). L'interfaccia usa `useLocalTurn()` al posto di `!player.isAI`; la mano di carte mostra `useViewerId()`; `useAIPlayer` gira solo se `useRunsAI()`; nello scontro di un altro dispositivo niente «Continua» (`useDrivesCurrent`).
+- Trasporti (`types.ts → RoomTransport`): `firebaseTransport` (Auth anonima + Firestore, SDK caricato a richiesta) se `.env.local` è configurato; `localTransport` (localStorage + BroadcastChannel tra schede) in sviluppo senza configurazione o con `?rete=locale`.
+- Schermate: lobby → «Online» (`SetupScreen.handleOnline`: gli altri umani diventano posti per amici; se non ce ne sono, il giocatore 2) → `online/RoomScreen` (codice, link, posti) ; invito `?stanza=CODICE` → `online/JoinScreen`. Rientro automatico dopo una ricarica (localStorage `dominio.online`).
+- Firebase: `firebase.json` (hosting di `dist/` + regole), `firestore.rules`, `.env.example`. Prima volta `./scripts/firebase-setup.sh` (progetto, app web, `.env.local`, Firestore, accesso anonimo, pubblicazione); poi `npm run deploy`.
+
 ## Storia: "La Notte Lunga di Novarata"
 Contenuti in `src/data/story.ts`: prologo (3 pagine), 4 atti per turno (1, 3, 5, 7) con indizi sul mistero
 dell'incendio, dossier delle fazioni (leader, motto, movente, segreto, forme grammaticali), riga di racconto
@@ -52,6 +60,8 @@ per ogni territorio, 12 epiloghi (fazione × condizione di vittoria).
 - `npm run story -- 30 3` verifica narrativa (articoli generati, grammatica, epiloghi)
 - `npm run combat` verifica deterministica del motore di combattimento (blitz, tregua)
 - `npm run traffic` rigenera i tracciati delle auto da `citta.glb` (dopo modifiche alla mappa in Blender)
+- `npm run deploy` ricompila e pubblica su Firebase Hosting (dopo `./scripts/firebase-setup.sh`)
+- Prova online senza Firebase: `npm run dev`, due schede su `http://localhost:5173/?rete=locale`, «Online» nella prima e link d'invito nella seconda
 
 ## Preferenze
 Rispondere in italiano. Modifiche mirate e incrementali, niente rifacimenti totali.
