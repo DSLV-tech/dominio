@@ -408,6 +408,7 @@
   padding: clamp(28px, 6vh, 64px) var(--gutter) 48px;
 }
 .lobby__head { display: grid; justify-items: center; gap: 10px; text-align: center; }
+.lobby__links { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 6px 14px; }
 .lobby__sub { font: italic 400 clamp(17px, 2.2vw, 21px)/1.3 var(--font-serif); color: var(--muted); }
 .lobby__config { width: min(1120px, 100%); display: grid; gap: 18px; }
 .lobby__row { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
@@ -453,7 +454,7 @@
 .dossier__leader span { font-weight: 400; color: var(--muted); }
 .dossier__motto { font: italic 400 16px/1.3 var(--font-serif); color: var(--text-strong); }
 .dossier__motive { font-size: 13px; color: var(--text); }
-.dossier__more { display: none; }   /* solo sul telefono, vedi mobile.css */
+.dossier__more { display: none; }   /* solo nella lobby compatta, vedi mobile.css */
 .dossier__ability { font-size: 12.5px; color: var(--muted); padding-top: 6px; border-top: 1px dashed var(--line-strong); }
 .dossier__ability strong { color: var(--faction); }
 

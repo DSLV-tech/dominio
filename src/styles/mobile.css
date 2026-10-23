@@ -267,38 +267,135 @@
   .sheet .prow__stats dd { font-size: 13px; }
 }
 
-/* ─── Lobby su telefono (verticale e orizzontale) ────────────────────────────
-   Movente del dossier a richiesta e pulsante d'avvio fisso in basso.
-   Dopo il blocco "schermi bassi" così .is-open vince sul display: none. */
-@media (max-width: 560px), (max-height: 520px) and (max-width: 1024px) {
-  /* Fazioni: stemma sopra il nome, bersaglio da 48 px per il pollice */
-  .pcard__factions { gap: 5px; }
-  .fchip { height: auto; min-height: 50px; flex-direction: column; gap: 3px; padding: 5px 2px; font-size: 11px; line-height: 1.1; }
-  .fchip.is-active { box-shadow: inset 0 -3px 0 var(--chip); }
+/* ─── Lobby compatta (telefono): tutto in uno schermo, senza scorrere ───────
+   SetupScreen la usa con useIsNarrow (stessa condizione di questo file).
+   Righe giocatore compatte; un solo selettore di fazione e un solo dossier,
+   per la riga selezionata. Il dossier è l'unica parte elastica: se lo spazio
+   non basta (movente aperto) scorre al suo interno, la pagina no. */
+.lobby--compact {
+  height: 100dvh; min-height: 0; overflow: hidden;
+  grid-template-rows: auto minmax(0, 1fr); justify-items: stretch; gap: 10px;
+  padding: max(10px, env(safe-area-inset-top)) max(var(--gutter), env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom)) max(var(--gutter), env(safe-area-inset-left));
+}
+.lobby--compact .lobby__head { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.lobby--compact .brand-mark--xl { font-size: 24px; }
+.lobby--compact .lobby__links { justify-content: flex-end; }
+.lobby--compact .install-hint--ios { display: none; }   /* troppo lungo qui: resta l'invito del browser */
+.lobby--compact .lobby__sub { display: none; }
+.lobby--compact .lobby__config {
+  width: 100%; min-height: 0;
+  grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto minmax(0, 1fr) auto; gap: 10px;
+}
+.lobby--compact .seg--sm .seg__btn { height: 34px; min-width: 0; font-size: 13px; }
+.lobby--compact .seg--stretch { min-width: 0; }
 
-  .dossier__motive { display: none; }
-  .dossier__motive.is-open { display: block; animation: fade-in-up 200ms ease-out both; }
-  .dossier__more {
-    display: inline-flex; align-items: center; justify-self: start; gap: 6px; min-height: 32px; padding: 0;
-    background: none; border: 0; cursor: pointer;
-    font: 500 11px/1 var(--font-mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--faction);
-  }
-  .dossier__more::after { content: '▾'; font-size: 12px; transition: transform 160ms ease; }
-  .dossier__more[aria-expanded='true']::after { transform: rotate(180deg); }
+.lobby__settings { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 6px 10px; }
+.lobby__field { display: grid; gap: 5px; min-width: 0; }
+.lobby__settings .lobby__hint { grid-column: 1 / -1; font-size: 11.5px; }
 
-  /* Pulsante d'avvio sempre a portata di pollice */
-  .lobby { padding-bottom: 0; }
-  .lobby__start {
-    position: sticky; bottom: 0; z-index: 2;
-    margin: 0 calc(-1 * max(var(--gutter), env(safe-area-inset-left)));
-    padding: 28px max(var(--gutter), env(safe-area-inset-right)) max(14px, env(safe-area-inset-bottom)) max(var(--gutter), env(safe-area-inset-left));
-    background: linear-gradient(to bottom, transparent, color-mix(in srgb, var(--ink-0) 92%, transparent) 22px, var(--ink-0));
-  }
+.lrow-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; align-content: start; }
+.lrow {
+  position: relative;   /* contiene le etichette .sr-only: niente scroll di pagina fantasma */
+  display: flex; align-items: center; gap: 8px; padding: 5px 6px 5px 5px;
+  background: var(--ink-1); border: 1px solid var(--line); border-left: 3px solid var(--faction);
+  border-radius: var(--radius-m);
+  transition: background 160ms ease, border-color 160ms ease;
+}
+.lrow.is-current {
+  background: color-mix(in srgb, var(--faction-bg) 45%, var(--ink-1));
+  border-color: color-mix(in srgb, var(--faction) 55%, transparent); border-left-color: var(--faction);
+}
+.lrow__pick {
+  flex: none; width: 38px; height: 38px; padding: 0; display: grid; place-items: center; cursor: pointer;
+  background: var(--ink-0); border: 1px solid var(--line); border-radius: 8px;
+}
+.lrow.is-current .lrow__pick { border-color: var(--faction); box-shadow: 0 0 0 1px var(--faction); }
+.lrow__name { height: 38px; font-size: 16px; }   /* 16 px: Safari iOS non ingrandisce la pagina al tocco */
+.lrow .seg { flex: none; }
+.lrow .seg__btn { padding: 0 10px; }
+
+.lobby__pick { min-height: 0; display: grid; grid-template-rows: auto auto minmax(0, max-content); align-content: start; gap: 6px; }
+.lobby__pick .label strong { color: var(--text-strong); }
+.lobby__pick .dossier { min-height: 0; overflow-y: auto; overscroll-behavior: contain; align-content: start; }
+
+/* Fazioni: stemma sopra il nome, bersaglio da 46 px per il pollice */
+.lobby--compact .pcard__factions { gap: 5px; }
+.lobby--compact .fchip { height: auto; min-height: 46px; flex-direction: column; gap: 3px; padding: 4px 2px; font-size: 11px; line-height: 1.1; }
+.lobby--compact .fchip.is-active { box-shadow: inset 0 -3px 0 var(--chip); }
+
+/* Dossier: chiuso mostra fazione e abilità; aperto aggiunge base, capo, motto e movente */
+.lobby--compact .dossier { gap: 5px; padding: 8px 12px; }
+.lobby--compact .dossier__faction { font-size: 16px; }
+.lobby--compact .dossier__emblem { width: 26px; height: 26px; }
+.lobby--compact .dossier__ability { order: 1; padding-top: 0; border-top: 0; font-size: 12.5px; }
+.lobby--compact .dossier__more {
+  order: 2; display: inline-flex; align-items: center; justify-self: start; gap: 6px; min-height: 28px; padding: 0;
+  background: none; border: 0; cursor: pointer;
+  font: 500 11px/1 var(--font-mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--faction);
+}
+.lobby--compact .dossier__more::after { content: '▾'; font-size: 12px; transition: transform 160ms ease; }
+.lobby--compact .dossier__more[aria-expanded='true']::after { transform: rotate(180deg); }
+.lobby--compact .dossier__home,
+.lobby--compact .dossier__leader,
+.lobby--compact .dossier__motto,
+.lobby--compact .dossier__motive { display: none; order: 3; }
+.lobby--compact .dossier.is-open :is(.dossier__home, .dossier__leader, .dossier__motto, .dossier__motive) { display: block; animation: fade-in-up 200ms ease-out both; }
+.lobby--compact .dossier__motto { font-size: 15px; }
+
+/* Schermi bassi: la spiegazione dello spostamento lascia spazio al dossier */
+@media (max-height: 700px) {
+  .lobby__settings .lobby__hint { display: none; }
 }
 
-/* Telefono in orizzontale: barra d'avvio più bassa, la lobby resta leggibile */
+/* Telefoni piccoli in verticale (iPhone SE in Safari): tutto un po' più stretto */
+@media (max-height: 600px) and (orientation: portrait) {
+  .lobby--compact { gap: 6px; }
+  .lobby--compact .lobby__config { gap: 7px; }
+  .lobby--compact .seg--sm .seg__btn { height: 30px; }
+  .lrow-list { gap: 4px; }
+  .lrow { padding: 2px 4px 2px 2px; }
+  .lrow__pick { width: 32px; height: 32px; }
+  .lrow__pick .emblem { width: 22px; height: 22px; }
+  .lrow__name { height: 32px; }
+  .lobby--compact .fchip { min-height: 40px; gap: 2px; padding: 3px 2px; }
+  .lobby--compact .fchip__emblem { width: 18px; height: 18px; }
+  .lobby--compact .lobby__start .btn--xl { min-height: 42px; }
+}
+
+.lobby--compact .lobby__start { position: static; margin: 0; padding: 0; background: none; }
+.lobby--compact .lobby__start .btn--xl { min-height: 48px; max-width: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .lrow { transition: none; }
+}
+
+/* Telefono in orizzontale: giocatori a sinistra, fazione e avvio a destra */
 @media (max-height: 520px) and (max-width: 1024px) {
-  .lobby__start { padding-top: 16px; }
-  .lobby__start .btn--xl { min-height: 42px; }
+  .lobby--compact { gap: 8px; }
+  .lobby--compact .brand-mark--xl { font-size: 20px; }
+  .lobby--compact .lobby__config {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr) auto;
+    gap: 8px 16px;
+  }
+  .lobby__settings { grid-column: 1; grid-row: 1; }
+  .lrow-list { grid-column: 1; grid-row: 2 / span 2; min-height: 0; overflow-y: auto; gap: 5px; }
+  .lobby__pick { grid-column: 2; grid-row: 1 / span 2; }
+  .lobby--compact .lobby__start { grid-column: 2; grid-row: 3; }
+  .lobby--compact .lobby__start .btn--xl { min-height: 42px; }
+  .lrow { padding: 3px 5px 3px 3px; }
+  .lrow__pick { width: 36px; height: 36px; }
+  .lrow__name { height: 36px; }
+  .lobby--compact .seg--sm .seg__btn { height: 32px; }
   .fchip { min-height: 46px; }
+}
+
+/* Telefoni piccoli in orizzontale (iPhone SE): quattro righe senza scorrere */
+@media (max-height: 360px) and (orientation: landscape) {
+  .lrow-list { gap: 4px; }
+  .lrow { padding: 2px 4px 2px 2px; }
+  .lrow__pick { width: 34px; height: 34px; }
+  .lrow__pick .emblem { width: 24px; height: 24px; }
+  .lrow__name { height: 34px; }
+  .lrow .seg__btn { height: 34px; min-height: 34px; }
+  .lrow .seg { padding: 2px; }
 }
